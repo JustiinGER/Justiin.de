@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand-bg: #151b23;
+  --color-brand-card: #1e2532;
+  --color-brand-border: #2e3a4d;
+  --color-brand-accent: #38bdf8;
+  --color-brand-muted: #8b9eb3;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--color-brand-bg);
+  color: #f8fafc;
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-brand-card border border-brand-border rounded-2xl shadow-lg;
+  }
+  
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+    will-change: transform;
+  }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-33.3333%); }
+}
