@@ -35,7 +35,7 @@ export function Lab() {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white text-lg leading-tight">
+                  <h3 className="font-semibold text-slate-900 dark:text-white text-lg leading-tight">
                     {server.name}
                   </h3>
                   <p className="text-sm text-brand-muted mt-0.5">{server.role}</p>
@@ -49,7 +49,7 @@ export function Lab() {
             {/* OS Badge */}
             <div className="mb-5">
               <span
-                className={`inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider px-2.5 py-1 rounded-md border border-white/10 ${server.osBg} ${server.osColor}`}
+                className={`inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider px-2.5 py-1 rounded-md border border-black/10 dark:border-white/10 ${server.osBg} ${server.osColor}`}
               >
                 <Globe className="w-3 h-3" aria-hidden="true" />
                 {server.os}
@@ -57,7 +57,7 @@ export function Lab() {
             </div>
 
             {/* Specs - terminal-style rack mount */}
-            <div className="bg-black/30 rounded-lg border border-white/5 p-4 mb-5 font-mono">
+            <div className="bg-black/5 dark:bg-black/30 rounded-lg border border-black/10 dark:border-white/5 p-4 mb-5 font-mono">
               <div className="flex items-center gap-2 text-[10px] text-brand-muted uppercase tracking-widest mb-3">
                 <Activity className="w-3 h-3" aria-hidden="true" />
                 <span>Specifications</span>
@@ -66,12 +66,12 @@ export function Lab() {
                 {server.specs.map((spec) => (
                   <div
                     key={spec.label}
-                    className="text-center border border-white/5 rounded-md py-2 bg-white/[0.02]"
+                    className="text-center border border-black/5 dark:border-white/5 rounded-md py-2 bg-white/50 dark:bg-white/[0.02]"
                   >
                     <div className="text-[10px] text-brand-muted uppercase tracking-wider">
                       {spec.label}
                     </div>
-                    <div className="text-sm font-semibold text-white mt-1">
+                    <div className="text-sm font-semibold text-slate-900 dark:text-white mt-1">
                       {spec.value}
                     </div>
                   </div>
@@ -131,7 +131,7 @@ export function Lab() {
               </span>
               Network
             </div>
-            <div className="font-mono text-sm text-slate-300">
+            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
               <span className="text-brand-accent">10 GbE</span>
               <span className="text-brand-muted mx-2">|</span>
               <span>LAN + Reverse Proxy</span>

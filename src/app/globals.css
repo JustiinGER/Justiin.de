@@ -1,18 +1,42 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
-  --color-brand-bg: #151b23;
-  --color-brand-card: #1e2532;
-  --color-brand-border: #2e3a4d;
-  --color-brand-accent: #38bdf8;
-  --color-brand-muted: #8b9eb3;
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-card: var(--brand-card);
+  --color-brand-border: var(--brand-border);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-text: var(--brand-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  /* Light Mode (Nature inspired) */
+  --brand-bg: #e8f0e8; /* Slightly darker nature white/green */
+  --brand-card: #f2f7f2; /* Off-white for cards */
+  --brand-border: #c3d9c3; /* Slightly darker green border */
+  --brand-accent: #16a34a; /* Fresh green */
+  --brand-muted: #64748b; /* Slate 500 */
+  --brand-text: #0f172a; /* Slate 900 */
+}
+
+.dark {
+  /* Dark Mode (Tech/Astro) */
+  --brand-bg: #151b23;
+  --brand-card: #1e2532;
+  --brand-border: #2e3a4d;
+  --brand-accent: #38bdf8;
+  --brand-muted: #8b9eb3;
+  --brand-text: #f8fafc;
+}
+
 body {
-  background-color: var(--color-brand-bg);
-  color: #f8fafc;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

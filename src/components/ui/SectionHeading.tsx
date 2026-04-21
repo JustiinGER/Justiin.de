@@ -13,7 +13,7 @@ export function SectionHeading({ title, subtitle }: SectionHeadingProps) {
 
   return (
     <motion.div variants={fadeUp} className="mb-10">
-      <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl flex items-baseline gap-3">
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl flex items-baseline gap-3">
         {match ? (
           <>
             <div className="flex flex-col">

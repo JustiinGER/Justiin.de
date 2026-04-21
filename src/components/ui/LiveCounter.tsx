@@ -82,7 +82,7 @@ export function LiveCounter({
   }[status];
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-white/[0.04] to-transparent border border-white/10 p-5">
+    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-black/[0.02] dark:from-white/[0.04] to-transparent border border-black/5 dark:border-white/10 p-5">
       {/* Top row: icon + status */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -115,12 +115,12 @@ export function LiveCounter({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3 }}
-              className={`${typeof value === 'string' ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'} font-bold text-white tabular-nums leading-none tracking-tight`}
+              className={`${typeof value === 'string' ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'} font-bold text-slate-900 dark:text-white tabular-nums leading-none tracking-tight`}
             >
               {typeof value === 'number' ? value.toLocaleString("en-US") : (value !== null ? value : "—")}
             </motion.span>
           </AnimatePresence>
-          <span className="text-sm text-slate-200 font-medium">{label}</span>
+          <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">{label}</span>
           
           {secondaryValue !== null && secondaryLabel && (
             <>
@@ -132,12 +132,12 @@ export function LiveCounter({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
-                  className={`${typeof secondaryValue === 'string' ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'} font-bold text-white tabular-nums leading-none tracking-tight`}
+                  className={`${typeof secondaryValue === 'string' ? 'text-2xl sm:text-3xl' : 'text-4xl sm:text-5xl'} font-bold text-slate-900 dark:text-white tabular-nums leading-none tracking-tight`}
                 >
                   {typeof secondaryValue === 'number' ? secondaryValue.toLocaleString("en-US") : secondaryValue}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-sm text-slate-200 font-medium">{secondaryLabel}</span>
+              <span className="text-sm text-slate-700 dark:text-slate-200 font-medium">{secondaryLabel}</span>
             </>
           )}
         </div>

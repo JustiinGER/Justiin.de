@@ -28,11 +28,11 @@ export function Tooltip({ children, content, className }: TooltipProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-brand-border text-white text-xs rounded-lg shadow-lg z-50 pointer-events-none w-max max-w-[200px] text-center leading-relaxed"
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 dark:bg-brand-border text-white text-xs rounded-lg shadow-lg z-50 pointer-events-none w-max max-w-[200px] text-center leading-relaxed"
             role="tooltip"
           >
             {content}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-brand-border" />
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-800 dark:border-t-brand-border" />
           </motion.div>
         )}
       </AnimatePresence>

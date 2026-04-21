@@ -36,10 +36,10 @@ const techStack = [
   { name: "NPM", icon: SiNginxproxymanager, color: "hover:text-[#009639]", url: "https://nginxproxymanager.com/" },
   { name: "WireGuard", icon: SiWireguard, color: "hover:text-[#88171A]", url: "https://www.wireguard.com/" },
   { name: "Pterodactyl", icon: SiPterodactyl, color: "hover:text-[#0B5C92]", url: "https://pterodactyl.io/" },
-  { name: "Next.js", icon: SiNextdotjs, color: "hover:text-white", url: "https://nextjs.org/" },
+  { name: "Next.js", icon: SiNextdotjs, color: "hover:text-slate-900 dark:hover:text-white", url: "https://nextjs.org/" },
   { name: "Tailwind", icon: SiTailwindcss, color: "hover:text-[#06B6D4]", url: "https://tailwindcss.com/" },
   { name: "TypeScript", icon: SiTypescript, color: "hover:text-[#3178C6]", url: "https://www.typescriptlang.org/" },
-  { name: "GitHub", icon: SiGithub, color: "hover:text-white", url: "https://github.com/" },
+  { name: "GitHub", icon: SiGithub, color: "hover:text-slate-900 dark:hover:text-white", url: "https://github.com/" },
 ];
 
 export function TechStack() {

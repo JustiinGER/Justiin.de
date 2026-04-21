@@ -40,7 +40,7 @@ export function ServerStatus({ id }: ServerStatusProps) {
 
   if (!id || isOnline === null) {
     return (
-      <div className="flex items-center gap-2 font-mono text-xs text-slate-400 bg-slate-500/10 px-2.5 py-1 rounded-full border border-slate-500/20">
+      <div className="flex items-center gap-2 font-mono text-xs text-slate-600 dark:text-slate-400 bg-slate-500/10 px-2.5 py-1 rounded-full border border-slate-500/20">
         <span className="relative flex h-2 w-2" aria-hidden="true">
           <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-500"></span>
         </span>
@@ -51,7 +51,7 @@ export function ServerStatus({ id }: ServerStatusProps) {
 
   if (isOnline) {
     return (
-      <div className="flex items-center gap-2 font-mono text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+      <div className="flex items-center gap-2 font-mono text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
         <span className="relative flex h-2 w-2" aria-hidden="true">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -62,7 +62,7 @@ export function ServerStatus({ id }: ServerStatusProps) {
   }
 
   return (
-    <div className="flex items-center gap-2 font-mono text-xs text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
+    <div className="flex items-center gap-2 font-mono text-xs text-red-600 dark:text-red-400 bg-red-500/10 px-2.5 py-1 rounded-full border border-red-500/20">
       <span className="relative flex h-2 w-2" aria-hidden="true">
         <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
       </span>

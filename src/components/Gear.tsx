@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { SectionHeading } from "./ui/SectionHeading";
 import { GlassCard } from "./ui/GlassCard";
 import { fadeUp, staggerContainer } from "@/lib/motion";
-import { SiAmd, SiNvidia, SiAsus, SiWesterndigital, SiSamsung } from "react-icons/si";
+import { SiAmd, SiNvidia, SiAsus } from "react-icons/si";
 import { BsDeviceSsd } from "react-icons/bs";
 import { FaWindows, FaMemory } from "react-icons/fa6";
 import { HardDrive, Keyboard, Mouse, Speaker, Mic, Monitor, Gamepad2, Droplets, Fan, SlidersHorizontal } from "lucide-react";
@@ -146,7 +146,7 @@ export function Gear() {
                 <h3 className="text-sm font-semibold text-brand-muted uppercase tracking-wider">
                   {item.title}
                 </h3>
-                <p className="font-semibold text-white text-lg">
+                <p className="font-semibold text-slate-900 dark:text-white text-lg">
                   {item.name}
                 </p>
                 <p className="text-sm text-slate-400">
@@ -158,15 +158,15 @@ export function Gear() {
             {item.items && (
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {item.items.map((subItem, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-white/5 px-4 py-3 rounded-lg border border-white/10">
+                  <div key={idx} className="flex items-center justify-between bg-black/5 dark:bg-white/5 px-4 py-3 rounded-lg border border-black/10 dark:border-white/10">
                     <div className="flex items-center gap-3">
-                      <div className="text-slate-400">
+                      <div className="text-slate-500 dark:text-slate-400">
                         {subItem.icon}
                       </div>
-                      <span className="text-sm font-medium text-slate-300">{subItem.name}</span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{subItem.name}</span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-semibold text-white text-sm">{subItem.size}</span>
+                      <span className="font-semibold text-slate-900 dark:text-white text-sm">{subItem.size}</span>
                       <span className="text-xs text-brand-muted">{subItem.type}</span>
                     </div>
                   </div>
