@@ -31,7 +31,7 @@ const techStack = [
   { name: "Home Assistant", icon: SiHomeassistant, color: "hover:text-[#41BDF5]", url: "https://www.home-assistant.io/" },
   { name: "AdGuard", icon: SiAdguard, color: "hover:text-[#68BC71]", url: "https://adguard.com/en/adguard-home/overview.html" },
   { name: "Vaultwarden", icon: SiBitwarden, color: "hover:text-[#175DDC]", url: "https://github.com/dani-garcia/vaultwarden" },
-  { name: "Paperless-ngx", icon: SiPaperlessngx, color: "hover:text-[#2764A1]", url: "https://docs.paperless-ngx.com/" },
+  { name: "Paperless-ngx", icon: SiPaperlessngx, color: "hover:text-[#17541F]", url: "https://docs.paperless-ngx.com/" },
   { name: "Portainer", icon: SiPortainer, color: "hover:text-[#13BEF9]", url: "https://www.portainer.io/" },
   { name: "NPM", icon: SiNginxproxymanager, color: "hover:text-[#009639]", url: "https://nginxproxymanager.com/" },
   { name: "WireGuard", icon: SiWireguard, color: "hover:text-[#88171A]", url: "https://www.wireguard.com/" },
