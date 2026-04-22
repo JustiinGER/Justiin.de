@@ -44,3 +44,7 @@ next-env.d.ts
 
 # leftover scaffolding
 /justin-portfolio/
+
+# agent / assistant instructions (local only)
+AGENTS.md
+CLAUDE.md

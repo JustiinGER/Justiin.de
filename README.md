@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Justiin.de — Personal Portfolio
+
+Personal portfolio site of **Justin** — IT System Technician, self-hosting enthusiast and tech explorer. Built with Next.js 16 and React 19, the site pulls live data from a homelab (ADS-B receiver, BirdNET-Go, Uptime Kuma, Steam) and falls back to demo mode when no endpoints are configured.
+
+Live: [justiin.de](https://justiin.de)
+
+## Tech Stack
+
+- [Next.js 16](https://nextjs.org) (App Router) + [React 19](https://react.dev)
+- [TypeScript 5](https://www.typescriptlang.org)
+- [Tailwind CSS 4](https://tailwindcss.com)
+- [Framer Motion](https://www.framer.com/motion/) for animations
+- [lucide-react](https://lucide.dev) & [react-icons](https://react-icons.github.io/react-icons/) for icons
+- [next-themes](https://github.com/pacocoursey/next-themes) for light/dark mode
+
+## Features
+
+- **Hero** with live scroll progress and theme toggle
+- **Lab** section showing live stats from homelab services
+- **Passions**, **Gear** and **Tech Stack** sections
+- Server-side API proxies (`/api/adsb`, `/api/birds`, `/api/steam`, `/api/uptime`, `/api/ping`) so secrets never reach the client
+- Graceful fallback to a "Demo" indicator when endpoints are not configured
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+ and npm
+
+### Install & run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy the example file and fill in the values for your own services:
 
-## Learn More
+```bash
+cp .env.local.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Any variable you leave empty will cause that widget to display a "Demo" badge instead of live data. See `.env.local.example` for the full list (ADS-B, BirdNET-Go, Steam, Uptime Kuma).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Command         | Description                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| `npm run dev`   | Start the dev server on `http://localhost:3000`                       |
+| `npm run build` | Build the production bundle                                           |
+| `npm run start` | Start the production server (`SERVER_PORT` env overrides the port)    |
+| `npm run lint`  | Run ESLint                                                            |
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/
+    api/         # Server-side proxies (adsb, birds, steam, uptime, ping)
+    layout.tsx   # Root layout (theme, background, scroll progress)
+    page.tsx     # Landing page composition
+  components/    # Hero, Lab, Passions, Gear, TechStack, UI primitives
+  lib/           # Data, motion presets, server-only helpers, utils
+public/          # Static assets
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+Designed to run behind a reverse proxy in a homelab or on [Vercel](https://vercel.com). Set the required environment variables on the host and run `npm run build && npm run start`. The start script honors `SERVER_PORT` if you need a non-default port.
+
+## License
+
+Personal project — all rights reserved unless stated otherwise.
