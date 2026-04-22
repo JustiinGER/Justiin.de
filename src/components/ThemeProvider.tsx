@@ -7,8 +7,9 @@ function TimeBasedThemeUpdater() {
   const { setTheme } = useTheme();
   
   React.useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (!storedTheme || storedTheme === "system") {
+    const isManual = localStorage.getItem("theme-manual") === "true";
+    
+    if (!isManual) {
       // Safe way to get the hour in Berlin time (0-23)
       const hourString = new Intl.DateTimeFormat("en-US", {
         timeZone: "Europe/Berlin",

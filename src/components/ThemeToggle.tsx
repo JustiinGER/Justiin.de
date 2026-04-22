@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -26,7 +26,10 @@ export function ThemeToggle() {
       animate={{ opacity: 1, scale: 1 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      onClick={() => setTheme(currentTheme === "dark" ? "light" : "dark")}
+      onClick={() => {
+        localStorage.setItem("theme-manual", "true");
+        setTheme(currentTheme === "dark" ? "light" : "dark");
+      }}
       className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-brand-card border border-brand-border shadow-lg text-brand-muted hover:text-brand-accent transition-colors"
       aria-label="Toggle theme"
     >
