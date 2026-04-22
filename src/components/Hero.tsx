@@ -25,7 +25,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 py-24 sm:py-32 lg:px-8 relative overflow-hidden">
+    <section id="about" className="min-h-screen flex flex-col justify-center px-6 py-24 sm:py-32 lg:px-8 relative overflow-hidden">
       <div className="mx-auto max-w-5xl">
         <motion.div
           variants={staggerContainer}

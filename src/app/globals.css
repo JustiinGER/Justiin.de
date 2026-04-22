@@ -39,6 +39,14 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
 @layer utilities {
   .glass-card {
     @apply bg-brand-card border border-brand-border rounded-2xl shadow-lg;
