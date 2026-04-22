@@ -1,6 +1,6 @@
-# Justiin.de — Personal Portfolio
+# Justiin.de — Personal Page
 
-Personal portfolio site of **Justin** — IT System Technician, self-hosting enthusiast and tech explorer. Built with Next.js 16 and React 19, the site pulls live data from a homelab (ADS-B receiver, BirdNET-Go, Uptime Kuma, Steam) and falls back to demo mode when no endpoints are configured.
+Personal page of **Justin** — IT System Technician, self-hosting enthusiast and tech explorer. Built with Next.js 16 and React 19, the site pulls live data from a homelab (ADS-B receiver, BirdNET-Go, Uptime Kuma, Steam) and falls back to demo mode when no endpoints are configured.
 
 Live: [justiin.de](https://justiin.de)
 
