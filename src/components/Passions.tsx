@@ -173,7 +173,7 @@ export function Passions() {
                   <h4 className="text-xs font-semibold text-brand-muted mb-3 uppercase tracking-wider">Equipment</h4>
                   <div className="flex flex-col gap-2">
                     {item.equipment.map((eq: Equipment) => (
-                      <div key={eq.value} className="flex items-center justify-between text-slate-600 dark:text-slate-300 bg-black/5 dark:bg-white/5 px-3 py-2.5 rounded-lg border border-black/10 dark:border-white/10 text-sm w-full">
+                      <div key={eq.value} className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-slate-600 dark:text-slate-300 bg-black/5 dark:bg-white/5 px-3 py-2.5 rounded-lg border border-black/10 dark:border-white/10 text-sm w-full">
                         <span className="text-slate-500 dark:text-slate-400 font-medium">{eq.label}</span>
                         <span className="font-semibold text-slate-900 dark:text-white">{eq.value}</span>
                       </div>

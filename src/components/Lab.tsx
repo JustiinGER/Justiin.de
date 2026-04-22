@@ -25,7 +25,7 @@ export function Lab() {
         {lab.servers.map((server, idx) => (
           <GlassCard key={server.id} variants={fadeUp} className="flex flex-col">
             {/* Server Header with status LED */}
-            <div className="flex items-start justify-between mb-6">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-0 mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-brand-accent/10 rounded-xl text-brand-accent">
                   {idx === 0 ? (
@@ -62,7 +62,7 @@ export function Lab() {
                 <Activity className="w-3 h-3" aria-hidden="true" />
                 <span>Specifications</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {server.specs.map((spec) => (
                   <div
                     key={spec.label}
@@ -131,11 +131,11 @@ export function Lab() {
               </span>
               Network
             </div>
-            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+            <div className="flex flex-wrap items-center gap-2 font-mono text-sm text-slate-700 dark:text-slate-300">
               <span className="text-brand-accent">10 GbE</span>
-              <span className="text-brand-muted mx-2">|</span>
+              <span className="text-brand-muted hidden sm:inline">|</span>
               <span>LAN + Reverse Proxy</span>
-              <span className="text-brand-muted mx-2">|</span>
+              <span className="text-brand-muted hidden sm:inline">|</span>
               <span className="text-brand-muted">Internal DNS + VPN</span>
             </div>
           </div>

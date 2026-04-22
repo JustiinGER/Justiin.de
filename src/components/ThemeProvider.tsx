@@ -9,8 +9,14 @@ function TimeBasedThemeUpdater() {
   React.useEffect(() => {
     const storedTheme = localStorage.getItem("theme");
     if (!storedTheme || storedTheme === "system") {
-      const germanyTime = new Date().toLocaleString("en-US", { timeZone: "Europe/Berlin" });
-      const hour = new Date(germanyTime).getHours();
+      // Safe way to get the hour in Berlin time (0-23)
+      const hourString = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Europe/Berlin",
+        hour: "numeric",
+        hour12: false
+      }).format(new Date());
+      
+      const hour = parseInt(hourString, 10);
       
       const isDaytime = hour >= 6 && hour < 19;
       const targetTheme = isDaytime ? "light" : "dark";
