@@ -30,13 +30,13 @@ export function Footer() {
         <nav aria-label="Footer" className="w-full md:w-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           <Link
             href="#main"
-            className="text-brand-accent hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-accent focus-visible:outline-offset-2 rounded"
+            className="font-medium text-brand-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-accent focus-visible:outline-offset-2 rounded"
           >
             Back to top
           </Link>
           <Link
             href="/privacy"
-            className="text-brand-accent hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-brand-accent focus-visible:outline-offset-2 rounded"
+            className="font-medium text-brand-text underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-accent focus-visible:outline-offset-2 rounded"
           >
             Privacy Policy
           </Link>
