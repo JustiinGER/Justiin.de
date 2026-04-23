@@ -15,7 +15,7 @@ const navItems = [
 export function Navbar() {
   const [activeSection, setActiveSection] = useState("about");
   const isClickScrolling = useRef(false);
-  const scrollTimeout = useRef<NodeJS.Timeout>();
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
