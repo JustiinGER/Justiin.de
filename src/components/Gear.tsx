@@ -121,7 +121,7 @@ export function Gear() {
   return (
     <section id="gear" className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
       <SectionHeading 
-        title="Hardware Setup" 
+        title="04. Hardware Setup" 
         subtitle="The machines that power my projects and experiments." 
       />
 
