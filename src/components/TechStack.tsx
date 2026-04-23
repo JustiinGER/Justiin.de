@@ -44,7 +44,7 @@ const techStack = [
 
 export function TechStack() {
   return (
-    <section className="py-24 overflow-hidden bg-brand-card/30 border-t border-brand-border">
+    <section id="techstack" className="py-24 overflow-hidden bg-brand-card/30 border-t border-brand-border">
       <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-12 text-center">
         <h2 className="text-sm font-semibold text-brand-muted uppercase tracking-widest">
           Technologies & Tools

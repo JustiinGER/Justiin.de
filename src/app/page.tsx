@@ -13,6 +13,9 @@ const Gear = dynamic(() => import("@/components/Gear").then(m => ({ default: m.G
 const TechStack = dynamic(() => import("@/components/TechStack").then(m => ({ default: m.TechStack })), {
   loading: () => <div className="min-h-[50vh] animate-pulse bg-brand-card/20" />,
 });
+const Contact = dynamic(() => import("@/components/Contact").then(m => ({ default: m.Contact })), {
+  loading: () => <div className="min-h-[50vh] animate-pulse bg-brand-card/20" />,
+});
 
 export default function Home() {
   return (
@@ -21,6 +24,7 @@ export default function Home() {
       <Lab />
       <Passions />
       <Gear />
+      <Contact />
       <TechStack />
     </main>
   );

@@ -300,3 +300,58 @@ export const lab: Lab = {
     },
   ],
 };
+
+export interface SocialLink {
+  id: string;
+  name: string;
+  url: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+}
+
+export interface ContactData {
+  title: string;
+  subtitle: string;
+  links: SocialLink[];
+}
+
+export const contactData: ContactData = {
+  title: "05. Connect",
+  subtitle: "You can find me on these platforms. Feel free to reach out.",
+  links: [
+    {
+      id: "discord",
+      name: "Discord",
+      url: "https://discord.com/users/123445696505446403",
+      icon: "FaDiscord",
+      color: "text-[#5865F2]",
+      bgColor: "bg-[#5865F2]/10",
+    },
+    {
+      id: "telegram",
+      name: "Telegram",
+      url: "https://t.me/JustiinGER",
+      icon: "FaTelegramPlane",
+      color: "text-[#229ED9]",
+      bgColor: "bg-[#229ED9]/10",
+    },
+    {
+      id: "steam",
+      name: "Steam",
+      url: "https://steamcommunity.com/id/justiinfighterde",
+      icon: "FaSteam",
+      color: "text-[#00ADEE]",
+      bgColor: "bg-[#00ADEE]/10",
+    },
+    {
+      id: "github",
+      name: "GitHub",
+      url: "https://github.com/JustiinGER",
+      icon: "FaGithub",
+      color: "text-slate-900 dark:text-white",
+      bgColor: "bg-slate-900/10 dark:bg-white/10",
+    }
+  ],
+};
+

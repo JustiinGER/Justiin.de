@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { User, Server, Heart, Cpu } from "lucide-react";
+import { User, Server, Heart, Cpu, MessageSquare } from "lucide-react";
 
 const navItems = [
   { name: "About", href: "#about", icon: <User className="w-4 h-4" /> },
   { name: "Lab", href: "#lab", icon: <Server className="w-4 h-4" /> },
   { name: "Passions", href: "#passions", icon: <Heart className="w-4 h-4" /> },
   { name: "Gear", href: "#gear", icon: <Cpu className="w-4 h-4" /> },
+  { name: "Connect", href: "#contact", icon: <MessageSquare className="w-4 h-4" /> },
 ];
 
 export function Navbar() {
