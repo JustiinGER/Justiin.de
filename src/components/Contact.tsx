@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { contactData } from "@/lib/data";
-import { fadeUp, staggerContainer } from "@/lib/motion";
+import { fadeUp } from "@/lib/motion";
 import { FaDiscord, FaTelegramPlane, FaSteam, FaGithub } from "react-icons/fa";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -17,21 +17,19 @@ export function Contact() {
   return (
     <section id="contact" className="py-24 sm:py-32 px-6 lg:px-8 max-w-7xl mx-auto relative">
       <motion.div
-        variants={staggerContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
       >
         <SectionHeading title={contactData.title} subtitle={contactData.subtitle} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
+        <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
           {contactData.links.map((link) => {
             const Icon = iconMap[link.icon];
 
             return (
-              <motion.a
+              <a
                 key={link.id}
-                variants={fadeUp}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -46,10 +44,10 @@ export function Contact() {
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 relative z-10">
                   {link.name}
                 </h3>
-              </motion.a>
+              </a>
             );
           })}
-        </div>
+        </motion.div>
       </motion.div>
     </section>
   );
