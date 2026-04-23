@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { User, Server, Heart, Cpu, MessageSquare } from "lucide-react";
 
@@ -14,12 +14,31 @@ const navItems = [
 
 export function Navbar() {
   const [activeSection, setActiveSection] = useState("about");
+  const isClickScrolling = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isClickScrolling.current) {
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+        scrollTimeout.current = setTimeout(() => {
+          isClickScrolling.current = false;
+        }, 100);
+      }
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && !isClickScrolling.current) {
             setActiveSection(entry.target.id);
           }
         });
@@ -41,6 +60,8 @@ export function Navbar() {
     e.preventDefault();
     const element = document.querySelector(href);
     if (element) {
+      isClickScrolling.current = true;
+      setActiveSection(href.substring(1));
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
