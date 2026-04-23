@@ -77,10 +77,14 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <strong>Theme:</strong> a manual theme override flag (
-                <code className="text-sm font-mono">theme-manual</code>) and theme state managed by{" "}
-                <code className="text-sm font-mono">next-themes</code> (typically under a key such as{" "}
-                <code className="text-sm font-mono">theme</code>).
+                <strong>Theme:</strong> a single preference stored as{" "}
+                <code className="text-sm font-mono">theme</code> with one of{" "}
+                <code className="text-sm font-mono">system</code>,{" "}
+                <code className="text-sm font-mono">light</code>,{" "}
+                <code className="text-sm font-mono">dark</code>, or{" "}
+                <code className="text-sm font-mono">dynamic</code> (time-based in Europe/Berlin). A
+                separate internal key may be used by the theme library for hydration (
+                <code className="text-sm font-mono">__nt</code>).
               </li>
               <li>
                 <strong>Reduced motion:</strong> whether animations should be reduced (

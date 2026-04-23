@@ -9,9 +9,6 @@ import dynamic from "next/dynamic";
 
 const Background = dynamic(() => import("@/components/Background").then(m => ({ default: m.Background })));
 
-const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(m => ({ default: m.ThemeToggle })));
-const MotionToggle = dynamic(() => import("@/components/MotionToggle").then(m => ({ default: m.MotionToggle })));
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,7 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -42,6 +44,24 @@ export default function RootLayout({
                 if (localStorage.getItem('motion-reduced') === 'true') {
                   document.documentElement.classList.add('reduce-motion');
                 }
+              } catch (e) {}
+              try {
+                var pref = localStorage.getItem('theme');
+                if (pref !== 'system' && pref !== 'light' && pref !== 'dark' && pref !== 'dynamic') {
+                  pref = 'system';
+                }
+                var applied;
+                if (pref === 'dynamic') {
+                  var hs = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: 'numeric', hour12: false }).format(new Date());
+                  var hr = parseInt(hs, 10);
+                  applied = (hr >= 6 && hr < 19) ? 'light' : 'dark';
+                } else if (pref === 'system') {
+                  applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                } else {
+                  applied = pref;
+                }
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(applied);
               } catch (e) {}
             `,
           }}
@@ -54,8 +74,6 @@ export default function RootLayout({
           <NavbarSlot />
           <div className="flex-1 flex flex-col">{children}</div>
           <Footer />
-          <ThemeToggle />
-          <MotionToggle />
         </ThemeProvider>
       </body>
     </html>

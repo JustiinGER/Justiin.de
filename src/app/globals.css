@@ -15,6 +15,7 @@
 
 :root {
   /* Light Mode (Nature inspired) */
+  --nav-bottom: 4.5rem;
   --brand-bg: #e8f0e8; /* Slightly darker nature white/green */
   --brand-card: #f2f7f2; /* Off-white for cards */
   --brand-border: #c3d9c3; /* Slightly darker green border */
