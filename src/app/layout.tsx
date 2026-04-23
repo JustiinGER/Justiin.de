@@ -3,9 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Background } from "@/components/Background";
 import { Navbar } from "@/components/Navbar";
+import dynamic from "next/dynamic";
+
+const Background = dynamic(() => import("@/components/Background").then(m => ({ default: m.Background })));
+
+const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(m => ({ default: m.ThemeToggle })));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
