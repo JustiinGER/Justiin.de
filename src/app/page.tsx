@@ -19,7 +19,7 @@ const Contact = dynamic(() => import("@/components/Contact").then(m => ({ defaul
 
 export default function Home() {
   return (
-    <main className="flex flex-col">
+    <main id="main" className="flex flex-col">
       <Hero />
       <Lab />
       <Passions />

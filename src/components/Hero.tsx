@@ -11,8 +11,28 @@ export function Hero() {
   const fullText = "Justin";
 
   useEffect(() => {
+    const checkMotion = () => {
+      const isReduced = 
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches || 
+        document.documentElement.classList.contains("reduce-motion");
+
+      if (isReduced) {
+        setText(fullText);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkMotion()) return;
+
     let currentIndex = 0;
     const interval = setInterval(() => {
+      // Check again inside interval in case it was toggled mid-typing
+      if (checkMotion()) {
+        clearInterval(interval);
+        return;
+      }
+
       if (currentIndex <= fullText.length) {
         setText(fullText.slice(0, currentIndex));
         currentIndex++;
@@ -40,8 +60,9 @@ export function Hero() {
           <motion.h1 
             variants={fadeUp}
             className="text-4xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-slate-900 dark:text-white min-h-[1.2em]"
+            aria-label={fullText}
           >
-            {text}
+            <span aria-hidden="true">{text}</span>
             <span className="animate-pulse font-light text-brand-accent" aria-hidden="true">|</span>
           </motion.h1>
 

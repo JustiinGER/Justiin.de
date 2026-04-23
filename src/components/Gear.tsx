@@ -149,7 +149,7 @@ export function Gear() {
                 <p className="font-semibold text-slate-900 dark:text-white text-lg break-words">
                   {item.name}
                 </p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-brand-muted">
                   {item.desc}
                 </p>
               </div>

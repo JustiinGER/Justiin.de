@@ -5,11 +5,11 @@ import { motion } from "framer-motion";
 import { User, Server, Heart, Cpu, MessageSquare } from "lucide-react";
 
 const navItems = [
-  { name: "About", href: "#about", icon: <User className="w-4 h-4" /> },
-  { name: "Lab", href: "#lab", icon: <Server className="w-4 h-4" /> },
-  { name: "Passions", href: "#passions", icon: <Heart className="w-4 h-4" /> },
-  { name: "Gear", href: "#gear", icon: <Cpu className="w-4 h-4" /> },
-  { name: "Connect", href: "#contact", icon: <MessageSquare className="w-4 h-4" /> },
+  { name: "About", href: "#about", icon: <User className="w-4 h-4" aria-hidden="true" /> },
+  { name: "Lab", href: "#lab", icon: <Server className="w-4 h-4" aria-hidden="true" /> },
+  { name: "Passions", href: "#passions", icon: <Heart className="w-4 h-4" aria-hidden="true" /> },
+  { name: "Gear", href: "#gear", icon: <Cpu className="w-4 h-4" aria-hidden="true" /> },
+  { name: "Connect", href: "#contact", icon: <MessageSquare className="w-4 h-4" aria-hidden="true" /> },
 ];
 
 export function Navbar() {
@@ -68,6 +68,7 @@ export function Navbar() {
 
   return (
     <motion.nav
+      aria-label="Primaer"
       initial={{ y: -100, opacity: 0, x: "-50%" }}
       animate={{ y: 0, opacity: 1, x: "-50%" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
@@ -79,6 +80,8 @@ export function Navbar() {
           <a
             key={item.name}
             href={item.href}
+            aria-label={item.name}
+            aria-current={isActive ? "page" : undefined}
             onClick={(e) => handleClick(e, item.href)}
             className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
               isActive

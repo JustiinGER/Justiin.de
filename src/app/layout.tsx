@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 const Background = dynamic(() => import("@/components/Background").then(m => ({ default: m.Background })));
 
 const ThemeToggle = dynamic(() => import("@/components/ThemeToggle").then(m => ({ default: m.ThemeToggle })));
+const MotionToggle = dynamic(() => import("@/components/MotionToggle").then(m => ({ default: m.MotionToggle })));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,13 +33,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('motion-reduced') === 'true') {
+                  document.documentElement.classList.add('reduce-motion');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="bg-brand-bg text-brand-text min-h-screen relative font-sans" suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ScrollProgress />
           <Background />
           <Navbar />
-          <ThemeToggle />
           {children}
+          <ThemeToggle />
+          <MotionToggle />
         </ThemeProvider>
       </body>
     </html>

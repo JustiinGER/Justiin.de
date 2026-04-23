@@ -64,7 +64,7 @@ export function Background() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 2 }}
-            className="absolute inset-0"
+            className="absolute inset-0 motion-reduce:hidden [.reduce-motion_&]:hidden"
           >
             {/* Shooting Stars */}
             {shootingStars.map((star, i) => (
@@ -123,7 +123,7 @@ export function Background() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 2 }}
-            className="absolute inset-0"
+            className="absolute inset-0 motion-reduce:hidden [.reduce-motion_&]:hidden"
           >
             {birds.map((bird, i) => (
               <motion.svg

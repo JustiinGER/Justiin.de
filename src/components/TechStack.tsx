@@ -59,7 +59,8 @@ export function TechStack() {
               target="_blank"
               rel="noopener noreferrer"
               key={`${tech.name}-${i}`} 
-              className={`flex items-center gap-3 text-slate-500 opacity-60 transition-all duration-300 hover:opacity-100 ${tech.color}`}
+              tabIndex={-1}
+              className={`flex items-center gap-3 text-slate-500 dark:text-slate-400 transition-all duration-300 hover:text-slate-900 dark:hover:text-white ${tech.color}`}
               title={tech.name}
             >
               <tech.icon className="w-8 h-8" aria-label={`${tech.name} logo`} />
