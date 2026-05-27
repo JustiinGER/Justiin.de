@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { HardDrive, Cpu, Activity, Globe } from "lucide-react";
-import { lab } from "@/lib/data";
+import { lab as defaultLab } from "@/lib/data";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { GlassCard } from "./ui/GlassCard";
 import { SectionHeading } from "./ui/SectionHeading";
@@ -10,19 +10,20 @@ import { SpecBadge } from "./ui/SpecBadge";
 import { Tooltip } from "./ui/Tooltip";
 import { ServerStatus } from "./ui/ServerStatus";
 
-export function Lab() {
+export function Lab({ data = defaultLab }: { data?: typeof defaultLab }) {
   return (
     <section id="lab" className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
-      <SectionHeading title={lab.title} subtitle={lab.subtitle} />
+      <SectionHeading title={data.title} subtitle={data.subtitle} />
 
       <motion.div
+        key={data.servers.length}
         variants={staggerContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
-        {lab.servers.map((server, idx) => (
+        {data.servers.map((server, idx) => (
           <GlassCard key={server.id} variants={fadeUp} className="flex flex-col">
             {/* Server Header with status LED */}
             <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-0 mb-6">
@@ -140,7 +141,21 @@ export function Lab() {
             </div>
           </div>
           <div className="font-mono text-xs text-brand-muted">
-            3 nodes · 168 GB RAM · 65 TB total storage
+            {data.servers.length} nodes ·{" "}
+            {data.servers.reduce((acc, s) => {
+              const ramSpec = s.specs.find(sp => sp.label.toUpperCase() === "RAM");
+              if (!ramSpec) return acc;
+              const val = parseInt(ramSpec.value) || 0;
+              return acc + val;
+            }, 0)} GB RAM ·{" "}
+            {data.servers.reduce((acc, s) => {
+              const storageSpecs = s.specs.filter(sp => ["HDD", "SSD", "NVME"].includes(sp.label.toUpperCase()));
+              return acc + storageSpecs.reduce((sum, sp) => {
+                const val = parseInt(sp.value) || 0;
+                // very rough estimation: TB vs GB
+                return sum + (sp.value.toUpperCase().includes("TB") ? val * 1000 : val);
+              }, 0);
+            }, 0) / 1000} TB total storage
           </div>
         </div>
       </motion.div>

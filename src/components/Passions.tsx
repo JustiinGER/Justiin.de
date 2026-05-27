@@ -2,8 +2,9 @@
 
 import { useCallback } from "react";
 import { motion } from "framer-motion";
-import { Star, Server, Plane, Bird, Gamepad2, Code, Leaf, Car, Boxes, Bug, Radar, Mic, Activity } from "lucide-react";
-import { passions, type Equipment, type Tag } from "@/lib/data";
+import { Radar, Mic, Activity, Gamepad2 } from "lucide-react";
+import { passions as defaultPassions, type Equipment, type Tag } from "@/lib/data";
+import { IconRenderer } from "./admin/IconPicker";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { GlassCard } from "./ui/GlassCard";
 import { SectionHeading } from "./ui/SectionHeading";
@@ -11,20 +12,8 @@ import { SpecBadge } from "./ui/SpecBadge";
 import { Tooltip } from "./ui/Tooltip";
 import { LiveCounter } from "./ui/LiveCounter";
 
-const iconMap: Record<string, React.ReactNode> = {
-  Star: <Star className="w-6 h-6" aria-label="Star Icon" />,
-  Server: <Server className="w-6 h-6" aria-label="Server Icon" />,
-  Plane: <Plane className="w-6 h-6" aria-label="Plane Icon" />,
-  Bird: <Bird className="w-6 h-6" aria-label="Bird Icon" />,
-  Gamepad2: <Gamepad2 className="w-6 h-6" aria-label="Gamepad Icon" />,
-  Code: <Code className="w-6 h-6" aria-label="Code Icon" />,
-  Leaf: <Leaf className="w-6 h-6" aria-label="Leaf Icon" />,
-  Car: <Car className="w-6 h-6" aria-label="Car Icon" />,
-  Boxes: <Boxes className="w-6 h-6" aria-label="Boxes Icon" />,
-  Bug: <Bug className="w-6 h-6" aria-label="Bug Icon" />,
-};
 
-export function Passions() {
+export function Passions({ data = defaultPassions }: { data?: typeof defaultPassions }) {
   const getAdsbValue = useCallback((d: unknown) => {
     const data = d as { aircraft?: number | null };
     return typeof data?.aircraft === "number" ? data.aircraft : null;
@@ -68,26 +57,27 @@ export function Passions() {
   return (
     <section id="passions" className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
       <SectionHeading 
-        title={passions.title} 
-        subtitle={passions.subtitle} 
+        title={data.title} 
+        subtitle={data.subtitle} 
       />
 
       <motion.div 
+        key={data.items.length}
         variants={staggerContainer}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[minmax(200px,auto)]"
       >
-        {passions.items.map((item) => (
+        {data.items.map((item) => (
           <GlassCard 
             key={item.id} 
             variants={fadeUp} 
             className={`${item.className} flex flex-col`}
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className={`p-2.5 rounded-xl ${item.bgColor} ${item.color}`}>
-                {iconMap[item.icon]}
+              <div className={`p-2.5 rounded-xl flex items-center justify-center ${item.bgColor} ${item.color}`}>
+                <IconRenderer name={item.icon} className="w-6 h-6" />
               </div>
               <div className="flex items-center gap-3">
                 <h3 className="font-semibold text-slate-900 dark:text-white text-xl">

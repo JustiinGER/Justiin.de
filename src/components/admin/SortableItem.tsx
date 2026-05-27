@@ -1,0 +1,65 @@
+"use client";
+
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
+
+interface SortableItemProps {
+  id: string;
+  index: number;
+  children: React.ReactNode;
+  onRemove?: () => void;
+}
+
+export function SortableItem({ id, index, children, onRemove }: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 40 - index,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative group bg-slate-900 border border-slate-800 rounded-2xl p-4 flex gap-4 hover:z-30 focus-within:z-40 ${
+        isDragging ? "shadow-2xl shadow-brand-accent/20 border-brand-accent/50 z-50" : ""
+      }`}
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center w-8 cursor-grab hover:text-brand-accent text-slate-600 transition-colors"
+      >
+        <GripVertical className="w-5 h-5" />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 space-y-4">
+        {children}
+      </div>
+
+      {/* Remove Button */}
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="absolute top-4 right-4 text-slate-500 hover:text-red-400 hover:bg-red-400/10 w-8 h-8 rounded-lg flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
+          title="Remove item"
+        >
+          &times;
+        </button>
+      )}
+    </div>
+  );
+}

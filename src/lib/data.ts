@@ -229,6 +229,7 @@ export interface LabServer {
   osBg: string;
   specs: ServerSpec[];
   services: (string | Tag)[];
+  ip?: string;
 }
 
 export interface Lab {
@@ -246,6 +247,7 @@ export const lab: Lab = {
       name: "Ugreen DXP6800 Pro",
       os: "Unraid OS",
       role: "Media & Storage Node",
+      ip: "192.168.2.166",
       osColor: "text-orange-400",
       osBg: "bg-orange-500/10",
       specs: [
@@ -267,6 +269,7 @@ export const lab: Lab = {
       name: "Minisforum UM790 Pro",
       os: "Proxmox VE",
       role: "Virtualization & Services",
+      ip: "192.168.2.146",
       osColor: "text-red-400",
       osBg: "bg-red-500/10",
       specs: [
@@ -287,11 +290,12 @@ export const lab: Lab = {
       name: "Dell Wyse 5070",
       os: "DietPi",
       role: "ADS-B & Audio Node",
+      ip: "192.168.2.153",
       osColor: "text-purple-400",
       osBg: "bg-purple-500/10",
       specs: [
         { label: "RAM", value: "8 GB" },
-        { label: "SSD", value: "60 GB" },
+        { label: "SSD", value: "600 GB" },
       ],
       services: [
         { name: "BirdNET-Go", tooltip: "Acoustic bird classification system" },
@@ -355,3 +359,139 @@ export const contactData: ContactData = {
   ],
 };
 
+export interface GearSubItem {
+  name: string;
+  size: string;
+  type: string;
+  icon: string;
+}
+
+export interface GearItem {
+  id: string;
+  title: string;
+  name: string;
+  desc: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  className: string;
+  items?: GearSubItem[];
+}
+
+export interface GearData {
+  title: string;
+  subtitle: string;
+  items: GearItem[];
+}
+
+export const gearData: GearData = {
+  title: "04. Hardware Setup",
+  subtitle: "The machines that power my projects and experiments.",
+  items: [
+    {
+      id: "cpu",
+      title: "Processor (CPU)",
+      name: "AMD Ryzen 9 7950X3D",
+      desc: "16-Core Processor",
+      icon: "SiAmd",
+      color: "text-[#ED1C24]",
+      bgColor: "bg-[#ED1C24]/10",
+      className: "col-span-1 md:col-span-6 lg:col-span-4",
+    },
+    {
+      id: "gpu",
+      title: "Graphics Card (GPU)",
+      name: "NVIDIA GeForce RTX 4090",
+      desc: "24GB GDDR6X",
+      icon: "SiNvidia",
+      color: "text-[#76B900]",
+      bgColor: "bg-[#76B900]/10",
+      className: "col-span-1 md:col-span-6 lg:col-span-4",
+    },
+    {
+      id: "ram",
+      title: "Memory (RAM)",
+      name: "96.0 GB RAM",
+      desc: "DDR5",
+      icon: "FaMemory",
+      color: "text-[#3178C6]",
+      bgColor: "bg-[#3178C6]/10",
+      className: "col-span-1 md:col-span-6 lg:col-span-4",
+    },
+    {
+      id: "mobo",
+      title: "Motherboard",
+      name: "ASUS ROG CROSSHAIR X670E EXTREME",
+      desc: "E-ATX",
+      icon: "SiAsus",
+      color: "text-[#FF0029]",
+      bgColor: "bg-[#FF0029]/10",
+      className: "col-span-1 md:col-span-6 lg:col-span-6",
+    },
+    {
+      id: "os",
+      title: "Operating System",
+      name: "Windows 11 Enterprise",
+      desc: "64-Bit",
+      icon: "FaWindows",
+      color: "text-[#0078D4]",
+      bgColor: "bg-[#0078D4]/10",
+      className: "col-span-1 md:col-span-6 lg:col-span-6",
+    },
+    {
+      id: "cooling_monitors",
+      title: "Cooling & Monitors",
+      name: "Displays & Custom Loop",
+      desc: "Screens and Water Cooling",
+      icon: "Fan",
+      color: "text-[#06B6D4]",
+      bgColor: "bg-[#06B6D4]/10",
+      className: "col-span-1 md:col-span-12",
+      items: [
+        { name: "1x LG 27GR95QE-B", size: "27 inch", type: "OLED Gaming Monitor", icon: "Monitor" },
+        { name: "2x Dell S2722DGM", size: "27 inch", type: "QHD Curved Monitor", icon: "Monitor" },
+        { name: "CORSAIR XC7 ELITE LCD", size: "Water Block", type: "CPU Cooler", icon: "Droplets" },
+        { name: "2x Corsair XD5 Elite", size: "Pump/Res", type: "Water Cooling", icon: "Droplets" },
+        { name: "4x Corsair XR7 480mm", size: "Radiators", type: "Hydro X Series", icon: "Fan" },
+        { name: "16x Corsair QX RGB", size: "Fans", type: "System Cooling", icon: "Fan" },
+      ]
+    },
+    {
+      id: "storage",
+      title: "Storage (SSDs & HDDs)",
+      name: "31 TB Total Storage",
+      desc: "High-Speed NVMe & Mass Storage",
+      icon: "HardDrive",
+      color: "text-brand-accent",
+      bgColor: "bg-brand-accent/10",
+      className: "col-span-1 md:col-span-12",
+      items: [
+        { name: "1x Samsung 990 PRO", size: "4 TB", type: "NVMe SSD", icon: "BsDeviceSsd" },
+        { name: "2x WD Black SN850X", size: "4 TB", type: "NVMe SSD", icon: "BsDeviceSsd" },
+        { name: "1x WD Black SN850X", size: "1 TB", type: "NVMe SSD", icon: "BsDeviceSsd" },
+        { name: "1x WD Black SN850", size: "1 TB", type: "NVMe SSD", icon: "BsDeviceSsd" },
+        { name: "1x Toshiba MG08ACA14TE", size: "14 TB", type: "HDD", icon: "HardDrive" },
+      ]
+    },
+    {
+      id: "peripherals",
+      title: "Peripherals & Audio",
+      name: "Setup & Gear",
+      desc: "Mouse, Keyboard, Audio & Control",
+      icon: "Keyboard",
+      color: "text-[#A855F7]",
+      bgColor: "bg-[#A855F7]/10",
+      className: "col-span-1 md:col-span-12",
+      items: [
+        { name: "CORSAIR K100 RGB", size: "Keyboard", type: "Optical-Mechanical", icon: "Keyboard" },
+        { name: "Logitech G502 X", size: "Mouse", type: "LIGHTSPEED Wireless", icon: "Mouse" },
+        { name: "Elgato Stream Deck XL", size: "Control", type: "32 Keys", icon: "Monitor" },
+        { name: "Tobii Eye Tracker 5", size: "Tracking", type: "Eye & Head Tracking", icon: "Gamepad2" },
+        { name: "Elgato Wave DX", size: "Microphone", type: "Dynamic Mic", icon: "Mic" },
+        { name: "Elgato Wave XLR", size: "Audio Interface", type: "Microphone Preamp", icon: "SlidersHorizontal" },
+        { name: "Edifier R1280DBs", size: "Speaker", type: "Studio Monitors", icon: "Speaker" },
+        { name: "Creative Pebble Pro", size: "Speaker", type: "Desktop Audio", icon: "Speaker" },
+      ]
+    },
+  ]
+};

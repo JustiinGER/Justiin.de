@@ -2,31 +2,23 @@
 
 import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { contactData } from "@/lib/data";
+import { contactData as defaultContactData } from "@/lib/data";
 import { fadeUp } from "@/lib/motion";
-import { FaDiscord, FaTelegramPlane, FaSteam, FaGithub } from "react-icons/fa";
+import { IconRenderer } from "./admin/IconPicker";
 
-const iconMap: Record<string, React.ElementType> = {
-  FaDiscord: FaDiscord,
-  FaTelegramPlane: FaTelegramPlane,
-  FaSteam: FaSteam,
-  FaGithub: FaGithub,
-};
-
-export function Contact() {
+export function Contact({ data = defaultContactData }: { data?: typeof defaultContactData }) {
   return (
     <section id="contact" className="py-24 sm:py-32 px-6 lg:px-8 max-w-7xl mx-auto relative">
       <motion.div
+        key={data.links.length + (data.email ? 1 : 0)}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: "-100px" }}
       >
-        <SectionHeading title={contactData.title} subtitle={contactData.subtitle} />
+        <SectionHeading title={data.title} subtitle={data.subtitle} />
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-          {contactData.links.map((link) => {
-            const Icon = iconMap[link.icon];
-
+          {data.links.map((link) => {
             return (
               <a
                 key={link.id}
@@ -35,10 +27,10 @@ export function Contact() {
                 rel="noopener noreferrer"
                 className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-brand-card/50 border border-brand-border hover:border-brand-accent/50 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(var(--brand-accent-rgb),0.2)] overflow-hidden"
               >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${link.bgColor}`} />
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${link.bgColor || "bg-brand-accent/10"}`} />
                 
-                <div className={`p-4 rounded-2xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1 ${link.bgColor} ${link.color}`}>
-                  <Icon className="w-10 h-10" />
+                <div className={`p-4 rounded-2xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1 ${link.bgColor || "bg-brand-accent/10"} ${link.color || "text-brand-accent"}`}>
+                  <IconRenderer name={link.icon} className="w-10 h-10" />
                 </div>
                 
                 <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2 relative z-10">
@@ -48,6 +40,18 @@ export function Contact() {
             );
           })}
         </motion.div>
+
+        {data.email && (
+          <motion.div variants={fadeUp} className="mt-16 flex justify-center">
+            <a 
+              href={`mailto:${data.email}`}
+              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-brand-accent/10 text-brand-accent hover:bg-brand-accent hover:text-white rounded-full font-semibold transition-all duration-300 border border-brand-accent/20 hover:border-brand-accent hover:shadow-[0_0_30px_-5px_rgba(var(--brand-accent-rgb),0.4)]"
+            >
+              <IconRenderer name="Mail" className="w-5 h-5 group-hover:-rotate-12 transition-transform duration-300" />
+              <span>{data.email}</span>
+            </a>
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );

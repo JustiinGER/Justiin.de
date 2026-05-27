@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import net from "net";
-import { getServerIp } from "@/lib/servers.server";
+import { getAllContent } from "@/lib/content.server";
 
 export const revalidate = 0; // Don't cache ping results
 
@@ -35,10 +35,8 @@ function checkPort(host: string, port: number, timeout = 2000): Promise<boolean>
  * Reachability probe for the homelab servers shown on the Lab section.
  *
  * The client passes a server `id` from the public data set. The handler
- * resolves that id against a server-side allowlist (`servers.server.ts`)
- * and only probes that specific host. This prevents the endpoint from
- * being abused as an SSRF / internal port scanner, and avoids leaking
- * internal IPs into the client bundle or query strings.
+ * resolves that id against the dynamic site content (from MariaDB/data.ts)
+ * and only probes that specific host.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -48,9 +46,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Server id is required" }, { status: 400 });
   }
 
-  const host = getServerIp(id);
+  const content = await getAllContent();
+  const server = content.lab.servers.find(s => s.id === id);
+  const host = server?.ip;
+
   if (!host) {
-    return NextResponse.json({ error: "Unknown server" }, { status: 404 });
+    return NextResponse.json({ error: "Unknown server or IP not configured" }, { status: 404 });
   }
 
   try {

@@ -51,3 +51,4 @@ next-env.d.ts
 # agent / assistant instructions (local only)
 AGENTS.md
 CLAUDE.md
+.agent/

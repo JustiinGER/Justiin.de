@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { SpecBadge } from "./ui/SpecBadge";
-import { aboutMe } from "@/lib/data";
+import { aboutMe as defaultAboutMe } from "@/lib/data";
 
-export function Hero() {
+export function Hero({ data = defaultAboutMe }: { data?: typeof defaultAboutMe }) {
   const [text, setText] = useState("");
   const fullText = "Justin";
 
@@ -54,7 +54,7 @@ export function Hero() {
           className="flex flex-col items-center gap-8 text-center mb-16"
         >
           <motion.div variants={fadeUp} className="text-sm font-semibold text-brand-accent tracking-widest uppercase mb-4">
-            {aboutMe.title}
+            {data.title}
           </motion.div>
 
           <motion.h1 
@@ -70,11 +70,11 @@ export function Hero() {
             variants={fadeUp}
             className="mt-4 text-lg sm:text-2xl leading-relaxed text-slate-700 dark:text-slate-300 max-w-3xl font-medium px-2 sm:px-0"
           >
-            {aboutMe.tagline}
+            {data.tagline}
           </motion.p>
 
           <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 mt-4">
-            {aboutMe.quickFacts.map((fact) => (
+            {data.quickFacts.map((fact) => (
               <SpecBadge key={fact} className="text-sm sm:text-base px-4 py-1.5">
                 {fact}
               </SpecBadge>
@@ -89,7 +89,7 @@ export function Hero() {
           viewport={{ once: true, margin: "-100px" }}
           className="max-w-3xl mx-auto space-y-5 sm:space-y-6 text-base sm:text-lg text-brand-muted leading-relaxed bg-brand-card/50 backdrop-blur-md p-5 sm:p-10 rounded-3xl border border-brand-border shadow-sm"
         >
-          {aboutMe.bio.map((paragraph, idx) => (
+          {data.bio.map((paragraph, idx) => (
             <motion.p key={idx} variants={fadeUp}>
               {paragraph}
             </motion.p>

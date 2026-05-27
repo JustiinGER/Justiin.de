@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/Hero";
+import { getAllContent } from "@/lib/content.server";
 
 const Lab = dynamic(() => import("@/components/Lab").then(m => ({ default: m.Lab })), {
   loading: () => <div className="min-h-screen animate-pulse bg-brand-card/20" />,
@@ -17,14 +18,18 @@ const Contact = dynamic(() => import("@/components/Contact").then(m => ({ defaul
   loading: () => <div className="min-h-[50vh] animate-pulse bg-brand-card/20" />,
 });
 
-export default function Home() {
+export const revalidate = 60; // Revalidate the page every 60 seconds
+
+export default async function Home() {
+  const content = await getAllContent();
+
   return (
     <main id="main" className="flex flex-col">
-      <Hero />
-      <Lab />
-      <Passions />
-      <Gear />
-      <Contact />
+      <Hero data={content.aboutMe} />
+      <Lab data={content.lab} />
+      <Passions data={content.passions} />
+      <Gear data={content.gear} />
+      <Contact data={content.contactData} />
       <TechStack />
     </main>
   );
