@@ -83,6 +83,7 @@ export function Hero({ data = defaultAboutMe }: { data?: typeof defaultAboutMe }
         </motion.div>
 
         <motion.div 
+          key={data.bio.length}
           variants={staggerContainer}
           initial="hidden"
           whileInView="show"

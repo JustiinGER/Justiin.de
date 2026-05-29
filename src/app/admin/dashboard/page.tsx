@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, LayoutDashboard, User, Server, Heart, 
-  Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle 
+  Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle,
+  Plus, Trash2
 } from "lucide-react";
 import type { SiteContent } from "@/lib/content.server";
 
@@ -39,6 +40,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [savedContentStrings, setSavedContentStrings] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const token = sessionStorage.getItem("admin_token");
@@ -61,6 +63,11 @@ export default function AdminDashboard() {
       .then(data => {
         if (data.content) {
           setContent(data.content);
+          setSavedContentStrings(
+            Object.fromEntries(
+              Object.entries(data.content).map(([k, v]) => [k, JSON.stringify(v)])
+            )
+          );
         }
         setIsLoading(false);
       })
@@ -75,7 +82,7 @@ export default function AdminDashboard() {
     router.push("/admin");
   };
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     if (!content) return;
     
     setIsSaving(true);
@@ -97,6 +104,7 @@ export default function AdminDashboard() {
 
       if (res.ok) {
         setSaveStatus("success");
+        setSavedContentStrings(prev => ({ ...prev, [activeTab]: JSON.stringify(content[activeTab]) }));
         setTimeout(() => setSaveStatus("idle"), 3000);
       } else {
         setSaveStatus("error");
@@ -106,7 +114,23 @@ export default function AdminDashboard() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [content, activeTab]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleSave]);
+
+  const hasUnsavedChanges = (tabId: string) =>
+    content && savedContentStrings[tabId]
+      ? JSON.stringify((content as any)[tabId]) !== savedContentStrings[tabId]
+      : false;
 
   const updateField = (path: string[], value: any) => {
     if (!content) return;
@@ -156,6 +180,7 @@ export default function AdminDashboard() {
           {tabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const isDirty = hasUnsavedChanges(tab.id);
             return (
               <button
                 key={tab.id}
@@ -167,7 +192,10 @@ export default function AdminDashboard() {
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? "text-brand-accent" : "text-slate-500"}`} />
-                {tab.label}
+                <span className="flex-1 text-left">{tab.label}</span>
+                {isDirty && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                )}
               </button>
             );
           })}
@@ -234,14 +262,20 @@ export default function AdminDashboard() {
               )}
             </AnimatePresence>
             
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-slate-950 font-semibold rounded-xl transition-all disabled:opacity-50"
-            >
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Changes
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-600 hidden lg:block select-none">Ctrl+S</span>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="relative flex items-center gap-2 px-5 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-slate-950 font-semibold rounded-xl transition-all disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Save Changes
+                {hasUnsavedChanges(activeTab) && !isSaving && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse" />
+                )}
+              </button>
+            </div>
           </div>
         </header>
 
@@ -280,14 +314,29 @@ export default function AdminDashboard() {
                       <div className="space-y-3">
                         <label className="block text-sm font-medium text-slate-300">Bio Paragraphs</label>
                         {content.aboutMe.bio.map((p, i) => (
-                          <textarea
-                            key={i}
-                            value={p}
-                            onChange={(e) => updateField(["aboutMe", "bio", i.toString()], e.target.value)}
-                            rows={3}
-                            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50 mb-3"
-                          />
+                          <div key={i} className="relative group">
+                            <textarea
+                              value={p}
+                              onChange={(e) => updateField(["aboutMe", "bio", i.toString()], e.target.value)}
+                              rows={3}
+                              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
+                            />
+                            {content.aboutMe.bio.length > 1 && (
+                              <button
+                                onClick={() => updateField(["aboutMe", "bio"], content.aboutMe.bio.filter((_, idx) => idx !== i))}
+                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-all"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         ))}
+                        <button
+                          onClick={() => updateField(["aboutMe", "bio"], [...content.aboutMe.bio, ""])}
+                          className="mt-2 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
+                        >
+                          <Plus className="w-5 h-5" /> Add Paragraph
+                        </button>
                       </div>
                     </div>
                   )}
