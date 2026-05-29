@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, LayoutDashboard, User, Server, Heart, 
   Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle,
-  Plus, Trash2
+  Plus
 } from "lucide-react";
+import { RemoveButton } from "@/components/admin/RemoveButton";
 import type { SiteContent } from "@/lib/content.server";
 
 import { Hero } from "@/components/Hero";
@@ -322,12 +323,11 @@ export default function AdminDashboard() {
                               className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
                             />
                             {content.aboutMe.bio.length > 1 && (
-                              <button
+                              <RemoveButton
+                                variant="card"
                                 onClick={() => updateField(["aboutMe", "bio"], content.aboutMe.bio.filter((_, idx) => idx !== i))}
-                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-all"
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </button>
+                                title="Remove paragraph"
+                              />
                             )}
                           </div>
                         ))}

@@ -5,6 +5,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { SortableItem } from "./SortableItem";
 import { IconPicker } from "./IconPicker";
 import { Plus } from "lucide-react";
+import { RemoveButton } from "./RemoveButton";
 
 export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => void }) {
   const updateField = (field: string, value: string) => {
@@ -121,7 +122,7 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                         <label className="block text-xs font-medium text-slate-400 mb-2">Sub-Items (RAM, CPU, etc.)</label>
                         <div className="space-y-2">
                           {(item.items || []).map((subItem: any, sIdx: number) => (
-                            <div key={sIdx} className="grid grid-cols-12 gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                            <div key={sIdx} className="group grid grid-cols-12 gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
                               <div className="col-span-2">
                                 <IconPicker value={subItem.icon} onChange={v => {
                                   const newItems = [...(item.items || [])];
@@ -151,11 +152,14 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                                 }} placeholder="e.g. AMD Ryzen" />
                               </div>
                               <div className="col-span-1 flex items-center justify-center">
-                                <button onClick={() => {
-                                  const newItems = [...(item.items || [])];
-                                  newItems.splice(sIdx, 1);
-                                  updateItem(idx, "items", newItems);
-                                }} className="text-red-400 hover:text-red-300 px-2">&times;</button>
+                                <RemoveButton
+                                  onClick={() => {
+                                    const newItems = [...(item.items || [])];
+                                    newItems.splice(sIdx, 1);
+                                    updateItem(idx, "items", newItems);
+                                  }}
+                                  title="Remove sub-item"
+                                />
                               </div>
                             </div>
                           ))}

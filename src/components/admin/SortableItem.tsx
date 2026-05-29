@@ -3,6 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { RemoveButton } from "./RemoveButton";
 
 interface SortableItemProps {
   id: string;
@@ -52,13 +53,7 @@ export function SortableItem({ id, index, children, onRemove }: SortableItemProp
 
       {/* Remove Button */}
       {onRemove && (
-        <button
-          onClick={onRemove}
-          className="absolute top-4 right-4 text-slate-500 hover:text-red-400 hover:bg-red-400/10 w-8 h-8 rounded-lg flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-          title="Remove item"
-        >
-          &times;
-        </button>
+        <RemoveButton variant="card" onClick={onRemove} title="Remove item" />
       )}
     </div>
   );

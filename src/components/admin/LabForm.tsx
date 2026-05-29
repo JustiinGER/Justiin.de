@@ -6,6 +6,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { SortableItem } from "./SortableItem";
 import { IconPicker } from "./IconPicker";
 import { Plus } from "lucide-react";
+import { RemoveButton } from "./RemoveButton";
 
 export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => void }) {
   const updateField = (field: string, value: string) => {
@@ -101,7 +102,7 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
                       <h4 className="text-sm font-medium text-slate-300 mb-2">Hardware Specs</h4>
                       <div className="space-y-2">
                         {server.specs.map((spec: any, sIdx: number) => (
-                          <div key={sIdx} className="flex gap-2">
+                          <div key={sIdx} className="group flex gap-2">
                             <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={spec.label} onChange={e => {
                               const newSpecs = [...server.specs];
                               newSpecs[sIdx].label = e.target.value;
@@ -112,11 +113,14 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
                               newSpecs[sIdx].value = e.target.value;
                               updateServer(idx, {...server, specs: newSpecs});
                             }} placeholder="Value" />
-                            <button onClick={() => {
-                              const newSpecs = [...server.specs];
-                              newSpecs.splice(sIdx, 1);
-                              updateServer(idx, {...server, specs: newSpecs});
-                            }} className="text-red-400 hover:text-red-300 px-2">&times;</button>
+                            <RemoveButton
+                              onClick={() => {
+                                const newSpecs = [...server.specs];
+                                newSpecs.splice(sIdx, 1);
+                                updateServer(idx, {...server, specs: newSpecs});
+                              }}
+                              title="Remove spec"
+                            />
                           </div>
                         ))}
                         <button onClick={() => updateServer(idx, {...server, specs: [...server.specs, {label: "New", value: ""}]})} className="text-sm text-brand-accent hover:underline">+ Add Spec</button>
@@ -128,7 +132,7 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
                       <h4 className="text-sm font-medium text-slate-300 mb-2">Services & Tags</h4>
                       <div className="space-y-2">
                         {server.services.map((svc: any, sIdx: number) => (
-                          <div key={sIdx} className="flex gap-2">
+                          <div key={sIdx} className="group flex gap-2">
                             <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={svc.name || svc} onChange={e => {
                               const newSvcs = [...server.services];
                               if(typeof newSvcs[sIdx] === 'string') newSvcs[sIdx] = e.target.value;
@@ -141,11 +145,14 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
                               else newSvcs[sIdx].tooltip = e.target.value;
                               updateServer(idx, {...server, services: newSvcs});
                             }} placeholder="Tooltip (optional)" />
-                            <button onClick={() => {
-                              const newSvcs = [...server.services];
-                              newSvcs.splice(sIdx, 1);
-                              updateServer(idx, {...server, services: newSvcs});
-                            }} className="text-red-400 hover:text-red-300 px-2">&times;</button>
+                            <RemoveButton
+                              onClick={() => {
+                                const newSvcs = [...server.services];
+                                newSvcs.splice(sIdx, 1);
+                                updateServer(idx, {...server, services: newSvcs});
+                              }}
+                              title="Remove service"
+                            />
                           </div>
                         ))}
                         <button onClick={() => updateServer(idx, {...server, services: [...server.services, {name: "New Service", tooltip: ""}]})} className="text-sm text-brand-accent hover:underline">+ Add Service</button>

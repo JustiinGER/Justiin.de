@@ -5,6 +5,7 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { SortableItem } from "./SortableItem";
 import { IconPicker } from "./IconPicker";
 import { Plus } from "lucide-react";
+import { RemoveButton } from "./RemoveButton";
 
 export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any) => void }) {
   const updateField = (field: string, value: string) => {
@@ -113,7 +114,7 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
                     <label className="block text-xs font-medium text-slate-400 mb-2">Tags</label>
                     <div className="space-y-2">
                       {item.tags.map((tag: any, tIdx: number) => (
-                        <div key={tIdx} className="flex gap-2">
+                        <div key={tIdx} className="group flex gap-2">
                           <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={tag.name} onChange={e => {
                             const newTags = [...item.tags];
                             newTags[tIdx].name = e.target.value;
@@ -124,11 +125,14 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
                             newTags[tIdx].tooltip = e.target.value;
                             updateItem(idx, "tags", newTags);
                           }} placeholder="Tooltip" />
-                          <button onClick={() => {
-                            const newTags = [...item.tags];
-                            newTags.splice(tIdx, 1);
-                            updateItem(idx, "tags", newTags);
-                          }} className="text-red-400 hover:text-red-300 px-2">&times;</button>
+                          <RemoveButton
+                            onClick={() => {
+                              const newTags = [...item.tags];
+                              newTags.splice(tIdx, 1);
+                              updateItem(idx, "tags", newTags);
+                            }}
+                            title="Remove tag"
+                          />
                         </div>
                       ))}
                       <button onClick={() => updateItem(idx, "tags", [...item.tags, {name: "New", tooltip: ""}])} className="text-sm text-brand-accent hover:underline">+ Add Tag</button>
