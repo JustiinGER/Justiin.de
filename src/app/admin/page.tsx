@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -13,7 +14,6 @@ export default function AdminLogin() {
   const router = useRouter();
 
   useEffect(() => {
-    // If already logged in, redirect
     if (sessionStorage.getItem("admin_token")) {
       router.push("/admin/dashboard");
     }
@@ -39,7 +39,7 @@ export default function AdminLogin() {
       } else {
         setError(data.error || "Login failed");
       }
-    } catch (err) {
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
@@ -47,32 +47,33 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-slate-950">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-brand-bg">
+      <ThemeToggle variant="floating" />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl"
+        className="w-full max-w-md bg-brand-card border border-brand-border rounded-3xl p-8 shadow-2xl"
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-brand-accent/10 text-brand-accent rounded-full flex items-center justify-center mb-4 border border-brand-accent/20">
             <Lock className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Admin Dashboard</h1>
-          <p className="text-slate-400 mt-2 text-sm">Sign in to manage your site content</p>
+          <h1 className="text-2xl font-bold text-brand-text tracking-tight">Admin Dashboard</h1>
+          <p className="text-brand-muted mt-2 text-sm">Sign in to manage your site content</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Username</label>
+            <label className="block text-sm font-medium text-brand-text mb-1.5">Username</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-slate-500" />
+                <User className="h-5 w-5 text-brand-muted" />
               </div>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-accent/50 transition-colors"
+                className="block w-full pl-10 pr-3 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-accent/50 transition-colors"
                 placeholder="admin"
                 required
               />
@@ -80,16 +81,16 @@ export default function AdminLogin() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+            <label className="block text-sm font-medium text-brand-text mb-1.5">Password</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-slate-500" />
+                <Lock className="h-5 w-5 text-brand-muted" />
               </div>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-accent/50 transition-colors"
+                className="block w-full pl-10 pr-3 py-2.5 bg-brand-bg border border-brand-border rounded-xl text-brand-text placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/50 focus:border-brand-accent/50 transition-colors"
                 placeholder="••••••••"
                 required
               />
@@ -105,7 +106,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center py-2.5 px-4 bg-brand-accent hover:bg-brand-accent/90 text-slate-950 font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            className="w-full flex items-center justify-center py-2.5 px-4 bg-brand-accent hover:bg-brand-accent/90 text-brand-bg font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
           </button>

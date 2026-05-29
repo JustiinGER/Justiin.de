@@ -57,8 +57,8 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
         <AdminField label="Subtitle" type="textarea" rows={2} value={data.subtitle} onChange={(v) => updateField("subtitle", v)} />
       </div>
 
-      <div className="pt-4 border-t border-slate-800">
-        <h3 className="text-lg font-semibold text-white mb-4">Gear Items</h3>
+      <div className="pt-4 border-t border-brand-border">
+        <h3 className="text-lg font-semibold text-brand-text mb-4">Gear Items</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={data.items.map((i:any) => i.id || i.name)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
@@ -74,7 +74,7 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Main Icon</label>
+                          <label className="block text-xs font-medium text-brand-muted mb-1">Main Icon</label>
                           <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                         </div>
                         <AdminField label="Description" size="compact" value={item.desc || ""} onChange={v => updateItem(idx, "desc", v)} />
@@ -87,10 +87,10 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                       </div>
 
                       <div className="pt-2">
-                        <label className="block text-xs font-medium text-slate-400 mb-2">Sub-Items (RAM, CPU, etc.)</label>
+                        <label className="block text-xs font-medium text-brand-muted mb-2">Sub-Items (RAM, CPU, etc.)</label>
                         <div className="space-y-2">
                           {(item.items || []).map((subItem: any, sIdx: number) => (
-                            <div key={sIdx} className="group grid grid-cols-12 gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                            <div key={sIdx} className="group grid grid-cols-12 gap-2 bg-brand-bg p-2 rounded-lg border border-brand-border">
                               <div className="col-span-2">
                                 <IconPicker value={subItem.icon} onChange={v => {
                                   const newItems = [...(item.items || [])];
@@ -99,21 +99,21 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                                 }} />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.name} onChange={e => {
+                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.name} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], name: e.target.value };
                                   updateItem(idx, "items", newItems);
                                 }} placeholder="e.g. CPU" />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.size} onChange={e => {
+                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.size} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], size: e.target.value };
                                   updateItem(idx, "items", newItems);
                                 }} placeholder="e.g. 16 Core" />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.type} onChange={e => {
+                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.type} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], type: e.target.value };
                                   updateItem(idx, "items", newItems);
@@ -144,7 +144,7 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
         
         <button
           onClick={addItem}
-          className="mt-6 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
+          className="mt-6 w-full py-4 border-2 border-dashed border-brand-border hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-brand-muted hover:text-brand-accent transition-colors"
         >
           <Plus className="w-5 h-5" /> Add Gear Item
         </button>

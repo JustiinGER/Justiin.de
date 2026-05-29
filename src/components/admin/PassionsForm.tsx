@@ -60,8 +60,8 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
         <AdminField label="Subtitle" type="textarea" rows={2} value={data.subtitle} onChange={(v) => updateField("subtitle", v)} />
       </div>
 
-      <div className="pt-4 border-t border-slate-800">
-        <h3 className="text-lg font-semibold text-white mb-4">Passions List</h3>
+      <div className="pt-4 border-t border-brand-border">
+        <h3 className="text-lg font-semibold text-brand-text mb-4">Passions List</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={data.items.map((i:any) => i.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
@@ -71,7 +71,7 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
                   <div className="grid grid-cols-2 gap-4">
                     <AdminField label="Title" size="compact" value={item.title} onChange={v => updateItem(idx, "title", v)} />
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">Icon</label>
+                      <label className="block text-xs font-medium text-brand-muted mb-1">Icon</label>
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
                   </div>
@@ -82,16 +82,16 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
                     <AdminField label="Bg Color Class" size="compact" value={item.bgColor} onChange={v => updateItem(idx, "bgColor", v)} />
                   </div>
                   <div className="pt-2">
-                    <label className="block text-xs font-medium text-slate-400 mb-2">Tags</label>
+                    <label className="block text-xs font-medium text-brand-muted mb-2">Tags</label>
                     <div className="space-y-2">
                       {item.tags.map((tag: any, tIdx: number) => (
                         <div key={tIdx} className="group flex gap-2">
-                          <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={tag.name} onChange={e => {
+                          <input className="w-1/3 bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={tag.name} onChange={e => {
                             const newTags = [...item.tags];
                             newTags[tIdx].name = e.target.value;
                             updateItem(idx, "tags", newTags);
                           }} placeholder="Tag Name" />
-                          <input className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={tag.tooltip || ""} onChange={e => {
+                          <input className="flex-1 bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={tag.tooltip || ""} onChange={e => {
                             const newTags = [...item.tags];
                             newTags[tIdx].tooltip = e.target.value;
                             updateItem(idx, "tags", newTags);
@@ -118,7 +118,7 @@ export function PassionsForm({ data, onChange }: { data: any; onChange: (v: any)
       
       <button
         onClick={addItem}
-        className="mt-6 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
+        className="mt-6 w-full py-4 border-2 border-dashed border-brand-border hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-brand-muted hover:text-brand-accent transition-colors"
       >
         <Plus className="w-5 h-5" /> Add Passion
       </button>

@@ -4,14 +4,13 @@ import { useState, useEffect } from "react";
 import Editor from "react-simple-code-editor";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
-import "prismjs/themes/prism-twilight.css"; // A nice dark theme
+import "prismjs/themes/prism-twilight.css";
 import { AlertCircle } from "lucide-react";
 
 export function JsonEditor({ value, onChange }: { value: any; onChange: (v: any) => void }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  // Sync prop -> local state when component mounts or value changes significantly (from parent)
   useEffect(() => {
     setCode(JSON.stringify(value, null, 2));
   }, [value]);
@@ -21,7 +20,7 @@ export function JsonEditor({ value, onChange }: { value: any; onChange: (v: any)
     try {
       const parsed = JSON.parse(newCode);
       setError(null);
-      onChange(parsed); // Only update parent if valid
+      onChange(parsed);
     } catch (e: any) {
       setError(e.message);
     }
@@ -35,7 +34,7 @@ export function JsonEditor({ value, onChange }: { value: any; onChange: (v: any)
           <p>Invalid JSON: {error}</p>
         </div>
       )}
-      <div className={`rounded-xl border ${error ? "border-red-500/50" : "border-slate-800"} bg-slate-900 overflow-hidden`}>
+      <div className={`rounded-xl border ${error ? "border-red-500/50" : "border-brand-border"} bg-brand-card overflow-hidden`}>
         <Editor
           value={code}
           onValueChange={handleChange}
@@ -45,7 +44,7 @@ export function JsonEditor({ value, onChange }: { value: any; onChange: (v: any)
             fontFamily: '"Fira Code", "JetBrains Mono", monospace',
             fontSize: 14,
             backgroundColor: "transparent",
-            minHeight: "400px"
+            minHeight: "400px",
           }}
           className="focus:outline-none"
         />

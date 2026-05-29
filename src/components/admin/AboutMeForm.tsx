@@ -66,8 +66,8 @@ export function AboutMeForm({ data, onChange }: { data: AboutMe; onChange: (v: A
         onChange={(v) => onChange({ ...data, quickFacts: v.split(",").map((s) => s.trim()) })}
       />
 
-      <div className="pt-4 border-t border-slate-800">
-        <h3 className="text-lg font-semibold text-white mb-4">Bio Paragraphs</h3>
+      <div className="pt-4 border-t border-brand-border">
+        <h3 className="text-lg font-semibold text-brand-text mb-4">Bio Paragraphs</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={bioItems.map((b) => b.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
@@ -98,7 +98,7 @@ export function AboutMeForm({ data, onChange }: { data: AboutMe; onChange: (v: A
 
         <button
           onClick={() => updateBio([...data.bio, ""])}
-          className="mt-6 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
+          className="mt-6 w-full py-4 border-2 border-dashed border-brand-border hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-brand-muted hover:text-brand-accent transition-colors"
         >
           <Plus className="w-5 h-5" /> Add Paragraph
         </button>

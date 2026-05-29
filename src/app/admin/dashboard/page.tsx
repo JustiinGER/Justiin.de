@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  LogOut, LayoutDashboard, User, Server, Heart, 
+  User, Server, Heart, 
   Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle
 } from "lucide-react";
 import { AboutMeForm } from "@/components/admin/AboutMeForm";
@@ -21,6 +21,7 @@ import { GearForm } from "@/components/admin/GearForm";
 import { PassionsForm } from "@/components/admin/PassionsForm";
 import { ContactForm } from "@/components/admin/ContactForm";
 import { JsonEditor } from "@/components/admin/JsonEditor";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
 type Tab = "aboutMe" | "lab" | "passions" | "gear" | "contactData";
 
@@ -76,11 +77,6 @@ export default function AdminDashboard() {
         setIsLoading(false);
       });
   }, [router]);
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin_token");
-    router.push("/admin");
-  };
 
   const handleSave = useCallback(async () => {
     if (!content) return;
@@ -149,7 +145,7 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-brand-bg">
         <Loader2 className="w-8 h-8 text-brand-accent animate-spin" />
       </div>
     );
@@ -157,85 +153,73 @@ export default function AdminDashboard() {
 
   if (!content) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-brand-bg">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-semibold text-white">Failed to load content</h2>
-        <button onClick={handleLogout} className="mt-4 text-brand-accent hover:underline">Return to Login</button>
+        <h2 className="text-xl font-semibold text-brand-text">Failed to load content</h2>
+        <button
+          onClick={() => {
+            sessionStorage.removeItem("admin_token");
+            router.push("/admin");
+          }}
+          className="mt-4 text-brand-accent hover:underline"
+        >
+          Return to Login
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-slate-900/50 flex flex-col">
-        <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-8 h-8 bg-brand-accent/20 text-brand-accent rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="w-4 h-4" />
-          </div>
-          <span className="font-semibold text-white tracking-wide">Dashboard</span>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            const isDirty = hasUnsavedChanges(tab.id);
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive 
-                    ? "bg-brand-accent/10 text-brand-accent" 
-                    : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? "text-brand-accent" : "text-slate-500"}`} />
-                <span className="flex-1 text-left">{tab.label}</span>
-                {isDirty && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-slate-800">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </div>
-      </aside>
+    <div className="min-h-screen bg-brand-bg flex">
+      <AdminSidebar activeNav="dashboard">
+        {tabs.map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          const isDirty = hasUnsavedChanges(tab.id);
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                isActive 
+                  ? "bg-brand-accent/10 text-brand-accent" 
+                  : "text-brand-muted hover:bg-black/5 dark:hover:bg-white/5 hover:text-brand-text"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? "text-brand-accent" : "text-brand-muted"}`} />
+              <span className="flex-1 text-left">{tab.label}</span>
+              {isDirty && (
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              )}
+            </button>
+          );
+        })}
+      </AdminSidebar>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-20 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between px-8 backdrop-blur-md">
+        <header className="h-20 border-b border-brand-border bg-brand-card/30 flex items-center justify-between px-8 backdrop-blur-md">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold text-white flex items-center gap-2">
+            <h1 className="text-xl font-semibold text-brand-text flex items-center gap-2">
               Editing: <span className="text-brand-accent">{tabs.find(t => t.id === activeTab)?.label}</span>
             </h1>
             
-            <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1">
+            <div className="flex items-center bg-brand-card border border-brand-border rounded-lg p-1">
               <button
                 onClick={() => setViewMode("form")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "form" ? "bg-slate-800 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "form" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
                 Form
               </button>
               <button
                 onClick={() => setViewMode("json")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "json" ? "bg-slate-800 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "json" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
                 JSON
               </button>
               <button
                 onClick={() => setViewMode("split")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "split" ? "bg-slate-800 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"}`}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "split" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
                 Split View
               </button>
@@ -263,11 +247,11 @@ export default function AdminDashboard() {
             </AnimatePresence>
             
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-600 hidden lg:block select-none">Ctrl+S</span>
+              <span className="text-xs text-brand-muted hidden lg:block select-none">Ctrl+S</span>
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="relative flex items-center gap-2 px-5 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-slate-950 font-semibold rounded-xl transition-all disabled:opacity-50"
+                className="relative flex items-center gap-2 px-5 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-brand-bg font-semibold rounded-xl transition-all disabled:opacity-50"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save Changes
@@ -281,7 +265,7 @@ export default function AdminDashboard() {
 
         <div className="flex-1 overflow-hidden flex">
           {/* Editor Side */}
-          <div className={`${viewMode === "split" ? "w-1/2 border-r border-slate-800" : "w-full"} h-full overflow-y-auto p-8`}>
+          <div className={`${viewMode === "split" ? "w-1/2 border-r border-brand-border" : "w-full"} h-full overflow-y-auto p-8`}>
             <div className="max-w-4xl mx-auto space-y-8 pb-20">
               {viewMode === "json" ? (
                 <div className="space-y-4">
@@ -314,8 +298,8 @@ export default function AdminDashboard() {
 
           {/* Preview Side */}
           {viewMode === "split" && (
-            <div className="w-1/2 h-full bg-slate-950 overflow-y-auto relative">
-              <div className="sticky top-0 left-0 w-full h-10 bg-slate-900/80 border-b border-slate-800 flex items-center justify-center text-xs font-semibold text-slate-500 uppercase tracking-widest z-50 backdrop-blur-sm">
+            <div className="w-1/2 h-full bg-brand-bg overflow-y-auto relative">
+              <div className="sticky top-0 left-0 w-full h-10 bg-brand-card/80 border-b border-brand-border flex items-center justify-center text-xs font-semibold text-brand-muted uppercase tracking-widest z-50 backdrop-blur-sm">
                 Live Preview
               </div>
               <div className="p-8 pointer-events-none">

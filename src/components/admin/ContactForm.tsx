@@ -57,8 +57,8 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
         <AdminField label="Email Address" value={data.email} onChange={(v) => updateField("email", v)} />
       </div>
 
-      <div className="pt-4 border-t border-slate-800">
-        <h3 className="text-lg font-semibold text-white mb-4">Contact Links</h3>
+      <div className="pt-4 border-t border-brand-border">
+        <h3 className="text-lg font-semibold text-brand-text mb-4">Contact Links</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={data.links.map((i:any) => i.id || i.name)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
@@ -68,7 +68,7 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
                 <SortableItem key={id} id={id} index={idx} onRemove={() => removeItem(idx)}>
                   <div className="grid grid-cols-2 gap-4 w-full">
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">Icon</label>
+                      <label className="block text-xs font-medium text-brand-muted mb-1">Icon</label>
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
                     <AdminField label="Name" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
@@ -84,7 +84,7 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
       
       <button
         onClick={addItem}
-        className="mt-6 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
+        className="mt-6 w-full py-4 border-2 border-dashed border-brand-border hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-brand-muted hover:text-brand-accent transition-colors"
       >
         <Plus className="w-5 h-5" /> Add Link
       </button>

@@ -24,12 +24,12 @@ export function AdminField({
   const isCompact = size === "compact";
 
   const labelClass = isCompact
-    ? "block text-xs font-medium text-slate-400 mb-1"
-    : "block text-sm font-medium text-slate-300";
+    ? "block text-xs font-medium text-brand-muted mb-1"
+    : "block text-sm font-medium text-brand-text mb-1.5";
 
   const inputClass = isCompact
-    ? "w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50"
-    : "w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50";
+    ? "w-full bg-brand-bg border border-brand-border rounded-lg px-3 py-2 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:ring-1 focus:ring-brand-accent/50"
+    : "w-full bg-brand-card border border-brand-border rounded-xl px-4 py-3 text-brand-text placeholder-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-accent/50";
 
   const wrapperClass = isCompact ? "" : "space-y-1.5";
 
