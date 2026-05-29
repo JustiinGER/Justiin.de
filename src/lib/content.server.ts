@@ -7,7 +7,7 @@
 import { aboutMe, passions, lab, contactData } from "./data";
 import { gearData } from "./data";
 import { getPool, isDbConfigured } from "./db.server";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export type ContentSection = "aboutMe" | "passions" | "lab" | "contactData" | "gear";
 
@@ -81,12 +81,205 @@ export async function getAllContent(): Promise<SiteContent> {
   }
 }
 
-export async function writeContent(section: ContentSection, data: unknown): Promise<void> {
+export interface WriteContentResult {
+  historyId: number | null;
+}
+
+export async function writeContent(
+  section: ContentSection,
+  data: unknown,
+  savedBy: string = "system"
+): Promise<WriteContentResult> {
   const pool = getPool();
+  let historyId: number | null = null;
+
+  const [existing] = await pool.execute<RowDataPacket[]>(
+    "SELECT data FROM site_content WHERE section = ?",
+    [section]
+  );
+
+  if (existing.length > 0) {
+    const oldData = existing[0].data;
+    const [insertResult] = await pool.execute<ResultSetHeader>(
+      `INSERT INTO site_content_history (section, data, saved_by) VALUES (?, ?, ?)`,
+      [section, typeof oldData === "string" ? oldData : JSON.stringify(oldData), savedBy]
+    );
+    historyId = insertResult.insertId;
+
+    const [countRows] = await pool.execute<RowDataPacket[]>(
+      `SELECT COUNT(*) AS cnt FROM site_content_history WHERE section = ? AND pinned = 0`,
+      [section]
+    );
+    const unpinnedCount: number = countRows[0].cnt;
+    if (unpinnedCount > 20) {
+      await pool.execute(
+        `DELETE FROM site_content_history
+         WHERE section = ? AND pinned = 0
+         ORDER BY saved_at ASC
+         LIMIT ?`,
+        [section, unpinnedCount - 20]
+      );
+    }
+  }
+
   await pool.execute(
     `INSERT INTO site_content (section, data)
      VALUES (?, ?)
      ON DUPLICATE KEY UPDATE data = VALUES(data), updated_at = CURRENT_TIMESTAMP`,
     [section, JSON.stringify(data)]
   );
+
+  return { historyId };
+}
+
+export async function getHistoryEntryById(
+  id: number
+): Promise<ContentHistoryEntry | null> {
+  const pool = getPool();
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, section, data, saved_by, pinned, saved_at FROM site_content_history WHERE id = ?`,
+    [id]
+  );
+  if (rows.length === 0) return null;
+  const row = rows[0];
+  return {
+    id: row.id,
+    section: row.section,
+    data: typeof row.data === "string" ? JSON.parse(row.data) : row.data,
+    saved_by: row.saved_by,
+    pinned: Boolean(row.pinned),
+    saved_at: row.saved_at,
+  };
+}
+
+export interface ContentHistoryEntry {
+  id: number;
+  section: string;
+  data: unknown;
+  saved_by: string;
+  pinned: boolean;
+  saved_at: Date;
+}
+
+export async function getContentHistory(
+  section: ContentSection,
+  limit: number = 20
+): Promise<ContentHistoryEntry[]> {
+  const pool = getPool();
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, section, data, saved_by, pinned, saved_at 
+     FROM site_content_history 
+     WHERE section = ? 
+     ORDER BY pinned DESC, saved_at DESC 
+     LIMIT ?`,
+    [section, limit]
+  );
+
+  return rows.map((row) => ({
+    id: row.id,
+    section: row.section,
+    data: typeof row.data === "string" ? JSON.parse(row.data) : row.data,
+    saved_by: row.saved_by,
+    pinned: Boolean(row.pinned),
+    saved_at: row.saved_at,
+  }));
+}
+
+export async function deleteHistoryEntry(id: number): Promise<boolean> {
+  const pool = getPool();
+  const [result] = await pool.execute<ResultSetHeader>(
+    `DELETE FROM site_content_history WHERE id = ?`,
+    [id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function setHistoryPinned(id: number, pinned: boolean): Promise<boolean> {
+  const pool = getPool();
+  const [result] = await pool.execute<ResultSetHeader>(
+    `UPDATE site_content_history SET pinned = ? WHERE id = ?`,
+    [pinned ? 1 : 0, id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function getCurrentContent(section: ContentSection): Promise<unknown | null> {
+  const pool = getPool();
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    "SELECT data FROM site_content WHERE section = ?",
+    [section]
+  );
+  if (rows.length === 0) return null;
+  const raw = rows[0].data;
+  return typeof raw === "string" ? JSON.parse(raw) : raw;
+}
+
+export interface RollbackResult {
+  section: ContentSection;
+  before: unknown | null;
+  after: unknown;
+  archivedHistoryId: number | null;
+}
+
+export async function rollbackContent(
+  historyId: number,
+  rolledBackBy: string
+): Promise<RollbackResult | null> {
+  const pool = getPool();
+
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    "SELECT section, data FROM site_content_history WHERE id = ?",
+    [historyId]
+  );
+
+  if (rows.length === 0) return null;
+
+  const { section, data } = rows[0];
+  const parsedData = typeof data === "string" ? JSON.parse(data) : data;
+  const contentSection = section as ContentSection;
+
+  const [current] = await pool.execute<RowDataPacket[]>(
+    "SELECT data FROM site_content WHERE section = ?",
+    [contentSection]
+  );
+
+  let before: unknown | null = null;
+  if (current.length > 0) {
+    const raw = current[0].data;
+    before = typeof raw === "string" ? JSON.parse(raw) : raw;
+  }
+
+  const { historyId: archivedHistoryId } = await writeContent(
+    contentSection,
+    parsedData,
+    rolledBackBy
+  );
+
+  return {
+    section: contentSection,
+    before,
+    after: parsedData,
+    archivedHistoryId,
+  };
+}
+
+export interface SectionUpdateTime {
+  section: string;
+  updated_at: Date | null;
+}
+
+export async function getSectionUpdateTimes(): Promise<SectionUpdateTime[]> {
+  if (!isDbConfigured()) {
+    return [];
+  }
+
+  const pool = getPool();
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    "SELECT section, updated_at FROM site_content"
+  );
+
+  return rows.map((row) => ({
+    section: row.section,
+    updated_at: row.updated_at,
+  }));
 }

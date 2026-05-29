@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth.server";
 import { getAllContent, writeContent, type ContentSection } from "@/lib/content.server";
+import { logAdminAction } from "@/lib/admin-log.server";
 
 export async function GET(req: NextRequest) {
   const user = requireAuth(req);
@@ -36,7 +37,20 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Invalid section" }, { status: 400 });
     }
 
-    await writeContent(section as ContentSection, data);
+    const { historyId } = await writeContent(
+      section as ContentSection,
+      data,
+      user.username
+    );
+
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    logAdminAction(user.username, "content_save", section, ip, {
+      historyId: historyId ?? undefined,
+      after: data,
+    }).catch((err) => {
+      console.error("[Content API] Failed to log save:", err);
+    });
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[Content API] PUT Error:", err);

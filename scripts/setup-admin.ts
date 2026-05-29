@@ -61,6 +61,31 @@ async function main() {
       )
     `);
 
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS site_content_history (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        section VARCHAR(64) NOT NULL,
+        data JSON NOT NULL,
+        saved_by VARCHAR(64) NOT NULL,
+        pinned TINYINT(1) NOT NULL DEFAULT 0,
+        saved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_section_time (section, saved_at)
+      )
+    `);
+
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS admin_log (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        username VARCHAR(64) NOT NULL,
+        action VARCHAR(64) NOT NULL,
+        section VARCHAR(64),
+        ip VARCHAR(64),
+        details JSON,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_created_at (created_at)
+      )
+    `);
+
     console.log("Tables ready.");
 
     const action = process.argv.includes("--reset") ? "reset" : "setup";

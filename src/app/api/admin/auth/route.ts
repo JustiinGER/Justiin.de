@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { getPool } from "@/lib/db.server";
 import { createToken } from "@/lib/jwt.server";
+import { logAdminAction } from "@/lib/admin-log.server";
 import type { RowDataPacket } from "mysql2";
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -101,6 +102,10 @@ export async function POST(req: Request) {
     clearFailedAttempts(ip);
 
     const token = createToken({ username });
+
+    logAdminAction(username, "login", null, ip).catch((err) => {
+      console.error("[Auth API] Failed to log login:", err);
+    });
 
     const response = NextResponse.json({ token });
 

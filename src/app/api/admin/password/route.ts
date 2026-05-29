@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import type { RowDataPacket } from "mysql2";
 import { requireAuth } from "@/lib/auth.server";
 import { getPool } from "@/lib/db.server";
+import { logAdminAction } from "@/lib/admin-log.server";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -52,6 +53,11 @@ export async function PATCH(req: NextRequest) {
       hash,
       dbUser.id,
     ]);
+
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    logAdminAction(user.username, "password_change", null, ip).catch((err) => {
+      console.error("[Password API] Failed to log password change:", err);
+    });
 
     return NextResponse.json({ success: true });
   } catch (err) {

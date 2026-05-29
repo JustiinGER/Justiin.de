@@ -40,6 +40,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Native selects often ignore inherited fonts on Windows */
+select,
+select option {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
 }

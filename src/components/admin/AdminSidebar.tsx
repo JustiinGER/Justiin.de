@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { Activity, LayoutDashboard, LogOut, Settings } from "lucide-react";
 
-type AdminNav = "dashboard" | "settings";
+type AdminNav = "dashboard" | "settings" | "monitor";
 
 type AdminSidebarProps = {
   activeNav: AdminNav;
@@ -13,6 +13,7 @@ type AdminSidebarProps = {
 
 const navItems: { id: AdminNav; label: string; href: string; icon: React.ElementType }[] = [
   { id: "dashboard", label: "Content", href: "/admin/dashboard", icon: LayoutDashboard },
+  { id: "monitor", label: "Monitor", href: "/admin/monitor", icon: Activity },
   { id: "settings", label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
