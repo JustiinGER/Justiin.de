@@ -318,6 +318,7 @@ export interface ContactData {
   title: string;
   subtitle: string;
   links: SocialLink[];
+  email?: string;
 }
 
 export const contactData: ContactData = {
