@@ -302,6 +302,22 @@ export const lab: Lab = {
         { name: "ADS-B Stack", tooltip: "Flight tracking software stack" }
       ],
     },
+    {
+      id: "raspberrypi5",
+      name: "Raspberry Pi 5",
+      os: "Raspberry Pi OS",
+      role: "Droneaware Host",
+      ip: "192.168.2.115",
+      osColor: "text-rose-400",
+      osBg: "bg-rose-500/10",
+      specs: [
+        { label: "RAM", value: "2 GB" },
+        { label: "SSD", value: "64 GB" },
+      ],
+      services: [
+        { name: "DroneAware Node", tooltip: "Direct Remote ID receiver tracking nearby drones" }
+      ],
+    },
   ],
 };
 
