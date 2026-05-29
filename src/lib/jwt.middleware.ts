@@ -1,6 +1,6 @@
 /**
  * Edge-compatible JWT verification using Web Crypto API.
- * Used by Next.js middleware (Edge runtime doesn't support Node's crypto).
+ * Used by Next.js proxy (Edge runtime doesn't support Node's crypto).
  */
 
 function getSecret(): string {
