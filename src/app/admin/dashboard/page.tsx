@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, LayoutDashboard, User, Server, Heart, 
-  Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle,
-  Plus
+  Cpu, Link as LinkIcon, Save, Loader2, Check, AlertCircle
 } from "lucide-react";
-import { RemoveButton } from "@/components/admin/RemoveButton";
+import { AboutMeForm } from "@/components/admin/AboutMeForm";
 import type { SiteContent } from "@/lib/content.server";
 
 import { Hero } from "@/components/Hero";
@@ -298,47 +297,10 @@ export default function AdminDashboard() {
               ) : (
                 <>
                   {activeTab === "aboutMe" && (
-                    <div className="space-y-6">
-                      <Field label="Title" value={content.aboutMe.title} onChange={v => updateField(["aboutMe", "title"], v)} />
-                      <Field label="Tagline" type="textarea" value={content.aboutMe.tagline} onChange={v => updateField(["aboutMe", "tagline"], v)} />
-                      
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-slate-300">Quick Facts (comma separated)</label>
-                        <input
-                          type="text"
-                          value={content.aboutMe.quickFacts.join(", ")}
-                          onChange={(e) => updateField(["aboutMe", "quickFacts"], e.target.value.split(",").map(s => s.trim()))}
-                          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-                        />
-                      </div>
-
-                      <div className="space-y-3">
-                        <label className="block text-sm font-medium text-slate-300">Bio Paragraphs</label>
-                        {content.aboutMe.bio.map((p, i) => (
-                          <div key={i} className="relative group">
-                            <textarea
-                              value={p}
-                              onChange={(e) => updateField(["aboutMe", "bio", i.toString()], e.target.value)}
-                              rows={3}
-                              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-                            />
-                            {content.aboutMe.bio.length > 1 && (
-                              <RemoveButton
-                                variant="card"
-                                onClick={() => updateField(["aboutMe", "bio"], content.aboutMe.bio.filter((_, idx) => idx !== i))}
-                                title="Remove paragraph"
-                              />
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          onClick={() => updateField(["aboutMe", "bio"], [...content.aboutMe.bio, ""])}
-                          className="mt-2 w-full py-4 border-2 border-dashed border-slate-700 hover:border-brand-accent/50 rounded-2xl flex items-center justify-center gap-2 text-slate-400 hover:text-brand-accent transition-colors"
-                        >
-                          <Plus className="w-5 h-5" /> Add Paragraph
-                        </button>
-                      </div>
-                    </div>
+                    <AboutMeForm
+                      data={content.aboutMe}
+                      onChange={(v) => updateField(["aboutMe"], v)}
+                    />
                   )}
 
                   {activeTab === "lab" && <LabForm data={content.lab} onChange={(v) => updateField(["lab"], v)} />}
@@ -367,29 +329,6 @@ export default function AdminDashboard() {
           )}
         </div>
       </main>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, type = "text" }: { label: string, value: string, onChange: (v: string) => void, type?: "text" | "textarea" }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-slate-300">{label}</label>
-      {type === "textarea" ? (
-        <textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          rows={3}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-        />
-      ) : (
-        <input
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-        />
-      )}
     </div>
   );
 }

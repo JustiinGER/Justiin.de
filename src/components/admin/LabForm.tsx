@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { IconPicker } from "./IconPicker";
+import { AdminField } from "./AdminField";
 import { Plus } from "lucide-react";
 import { RemoveButton } from "./RemoveButton";
 
@@ -56,25 +55,9 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
 
   return (
     <div className="space-y-8">
-      {/* Header Info */}
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Title</label>
-          <input
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.title}
-            onChange={(e) => updateField("title", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Subtitle</label>
-          <textarea
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.subtitle}
-            onChange={(e) => updateField("subtitle", e.target.value)}
-            rows={2}
-          />
-        </div>
+        <AdminField label="Title" value={data.title} onChange={(v) => updateField("title", v)} />
+        <AdminField label="Subtitle" type="textarea" rows={2} value={data.subtitle} onChange={(v) => updateField("subtitle", v)} />
       </div>
 
       <div className="pt-4 border-t border-slate-800">
@@ -85,30 +68,29 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
               {data.servers.map((server: any, idx: number) => (
                 <SortableItem key={server.id} id={server.id} index={idx} onRemove={() => removeServer(idx)}>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Name" value={server.name} onChange={v => updateServer(idx, {...server, name: v})} />
-                    <Field label="Internal ID" value={server.id} onChange={v => updateServer(idx, {...server, id: v})} />
-                    <Field label="IP Address" value={server.ip || ""} onChange={v => updateServer(idx, {...server, ip: v})} />
-                    <Field label="Role" value={server.role} onChange={v => updateServer(idx, {...server, role: v})} />
-                    <Field label="OS Name" value={server.os} onChange={v => updateServer(idx, {...server, os: v})} />
+                    <AdminField label="Name" size="compact" value={server.name} onChange={v => updateServer(idx, {...server, name: v})} />
+                    <AdminField label="Internal ID" size="compact" value={server.id} onChange={v => updateServer(idx, {...server, id: v})} />
+                    <AdminField label="IP Address" size="compact" value={server.ip || ""} onChange={v => updateServer(idx, {...server, ip: v})} />
+                    <AdminField label="Role" size="compact" value={server.role} onChange={v => updateServer(idx, {...server, role: v})} />
+                    <AdminField label="OS Name" size="compact" value={server.os} onChange={v => updateServer(idx, {...server, os: v})} />
                     <div className="grid grid-cols-2 gap-2">
-                      <Field label="OS Text Color" value={server.osColor} onChange={v => updateServer(idx, {...server, osColor: v})} />
-                      <Field label="OS Background" value={server.osBg} onChange={v => updateServer(idx, {...server, osBg: v})} />
+                      <AdminField label="OS Text Color" size="compact" value={server.osColor} onChange={v => updateServer(idx, {...server, osColor: v})} />
+                      <AdminField label="OS Background" size="compact" value={server.osBg} onChange={v => updateServer(idx, {...server, osBg: v})} />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6 pt-4 border-t border-slate-800/50 mt-4">
-                    {/* Specs */}
                     <div>
                       <h4 className="text-sm font-medium text-slate-300 mb-2">Hardware Specs</h4>
                       <div className="space-y-2">
                         {server.specs.map((spec: any, sIdx: number) => (
                           <div key={sIdx} className="group flex gap-2">
-                            <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={spec.label} onChange={e => {
+                            <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={spec.label} onChange={e => {
                               const newSpecs = [...server.specs];
                               newSpecs[sIdx].label = e.target.value;
                               updateServer(idx, {...server, specs: newSpecs});
                             }} placeholder="Label" />
-                            <input className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={spec.value} onChange={e => {
+                            <input className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={spec.value} onChange={e => {
                               const newSpecs = [...server.specs];
                               newSpecs[sIdx].value = e.target.value;
                               updateServer(idx, {...server, specs: newSpecs});
@@ -127,19 +109,18 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
                       </div>
                     </div>
 
-                    {/* Services */}
                     <div>
                       <h4 className="text-sm font-medium text-slate-300 mb-2">Services & Tags</h4>
                       <div className="space-y-2">
                         {server.services.map((svc: any, sIdx: number) => (
                           <div key={sIdx} className="group flex gap-2">
-                            <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={svc.name || svc} onChange={e => {
+                            <input className="w-1/3 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={svc.name || svc} onChange={e => {
                               const newSvcs = [...server.services];
                               if(typeof newSvcs[sIdx] === 'string') newSvcs[sIdx] = e.target.value;
                               else newSvcs[sIdx].name = e.target.value;
                               updateServer(idx, {...server, services: newSvcs});
                             }} placeholder="Name" />
-                            <input className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white" value={typeof svc === 'string' ? '' : svc.tooltip || ''} onChange={e => {
+                            <input className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={typeof svc === 'string' ? '' : svc.tooltip || ''} onChange={e => {
                               const newSvcs = [...server.services];
                               if(typeof newSvcs[sIdx] === 'string') newSvcs[sIdx] = {name: newSvcs[sIdx], tooltip: e.target.value};
                               else newSvcs[sIdx].tooltip = e.target.value;
@@ -172,19 +153,6 @@ export function LabForm({ data, onChange }: { data: any; onChange: (v: any) => v
           <Plus className="w-5 h-5" /> Add Server
         </button>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-slate-400 mb-1">{label}</label>
-      <input
-        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-      />
     </div>
   );
 }

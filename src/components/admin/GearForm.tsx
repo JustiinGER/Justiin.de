@@ -4,6 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
 import { IconPicker } from "./IconPicker";
+import { AdminField } from "./AdminField";
 import { Plus } from "lucide-react";
 import { RemoveButton } from "./RemoveButton";
 
@@ -52,23 +53,8 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Title</label>
-          <input
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.title}
-            onChange={(e) => updateField("title", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Subtitle</label>
-          <textarea
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.subtitle}
-            onChange={(e) => updateField("subtitle", e.target.value)}
-            rows={2}
-          />
-        </div>
+        <AdminField label="Title" value={data.title} onChange={(v) => updateField("title", v)} />
+        <AdminField label="Subtitle" type="textarea" rows={2} value={data.subtitle} onChange={(v) => updateField("subtitle", v)} />
       </div>
 
       <div className="pt-4 border-t border-slate-800">
@@ -77,19 +63,13 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
           <SortableContext items={data.items.map((i:any) => i.id || i.name)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
               {data.items.map((item: any, idx: number) => {
-                const id = item.id || `gear-${idx}`; // Fallback if id is missing
+                const id = item.id || `gear-${idx}`;
                 return (
                   <SortableItem key={item.id} id={item.id} index={idx} onRemove={() => removeItem(idx)}>
                     <div className="space-y-4 w-full">
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Title (Small Header)</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.title || ""} onChange={e => updateItem(idx, "title", e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Name (Main Header)</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.name} onChange={e => updateItem(idx, "name", e.target.value)} />
-                        </div>
+                        <AdminField label="Title (Small Header)" size="compact" value={item.title || ""} onChange={v => updateItem(idx, "title", v)} />
+                        <AdminField label="Name (Main Header)" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
@@ -97,25 +77,13 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                           <label className="block text-xs font-medium text-slate-400 mb-1">Main Icon</label>
                           <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Description</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.desc || ""} onChange={e => updateItem(idx, "desc", e.target.value)} />
-                        </div>
+                        <AdminField label="Description" size="compact" value={item.desc || ""} onChange={v => updateItem(idx, "desc", v)} />
                       </div>
 
                       <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">CSS Class (Grid sizing)</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.className || ""} onChange={e => updateItem(idx, "className", e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Color Class</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.color || ""} onChange={e => updateItem(idx, "color", e.target.value)} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-medium text-slate-400 mb-1">Bg Color Class</label>
-                          <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.bgColor || ""} onChange={e => updateItem(idx, "bgColor", e.target.value)} />
-                        </div>
+                        <AdminField label="CSS Class (Grid sizing)" size="compact" value={item.className || ""} onChange={v => updateItem(idx, "className", v)} />
+                        <AdminField label="Color Class" size="compact" value={item.color || ""} onChange={v => updateItem(idx, "color", v)} />
+                        <AdminField label="Bg Color Class" size="compact" value={item.bgColor || ""} onChange={v => updateItem(idx, "bgColor", v)} />
                       </div>
 
                       <div className="pt-2">
@@ -131,21 +99,21 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                                 }} />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white" value={subItem.name} onChange={e => {
+                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.name} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], name: e.target.value };
                                   updateItem(idx, "items", newItems);
                                 }} placeholder="e.g. CPU" />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white" value={subItem.size} onChange={e => {
+                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.size} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], size: e.target.value };
                                   updateItem(idx, "items", newItems);
                                 }} placeholder="e.g. 16 Core" />
                               </div>
                               <div className="col-span-3">
-                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white" value={subItem.type} onChange={e => {
+                                <input className="w-full bg-slate-900 border border-slate-800 rounded-md px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.type} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], type: e.target.value };
                                   updateItem(idx, "items", newItems);

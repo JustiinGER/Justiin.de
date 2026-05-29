@@ -4,6 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
 import { IconPicker } from "./IconPicker";
+import { AdminField } from "./AdminField";
 import { Plus } from "lucide-react";
 
 export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) => void }) {
@@ -51,31 +52,9 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Title</label>
-          <input
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.title}
-            onChange={(e) => updateField("title", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Subtitle</label>
-          <textarea
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.subtitle}
-            onChange={(e) => updateField("subtitle", e.target.value)}
-            rows={2}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
-          <input
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-brand-accent/50"
-            value={data.email}
-            onChange={(e) => updateField("email", e.target.value)}
-          />
-        </div>
+        <AdminField label="Title" value={data.title} onChange={(v) => updateField("title", v)} />
+        <AdminField label="Subtitle" type="textarea" rows={2} value={data.subtitle} onChange={(v) => updateField("subtitle", v)} />
+        <AdminField label="Email Address" value={data.email} onChange={(v) => updateField("email", v)} />
       </div>
 
       <div className="pt-4 border-t border-slate-800">
@@ -92,18 +71,9 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
                       <label className="block text-xs font-medium text-slate-400 mb-1">Icon</label>
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">Name</label>
-                      <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.name} onChange={e => updateItem(idx, "name", e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">URL (href)</label>
-                      <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.href} onChange={e => updateItem(idx, "href", e.target.value)} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-slate-400 mb-1">Hover Color Class</label>
-                      <input className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none" value={item.color} onChange={e => updateItem(idx, "color", e.target.value)} />
-                    </div>
+                    <AdminField label="Name" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
+                    <AdminField label="URL (href)" size="compact" value={item.href} onChange={v => updateItem(idx, "href", v)} />
+                    <AdminField label="Hover Color Class" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
                   </div>
                 </SortableItem>
               );
