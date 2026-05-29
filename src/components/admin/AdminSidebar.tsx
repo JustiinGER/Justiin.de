@@ -19,7 +19,12 @@ const navItems: { id: AdminNav; label: string; href: string; icon: React.Element
 export function AdminSidebar({ activeNav, children }: AdminSidebarProps) {
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } catch {
+      // Ignore fetch errors, proceed with logout anyway
+    }
     sessionStorage.removeItem("admin_token");
     router.push("/admin");
   };

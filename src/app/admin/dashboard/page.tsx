@@ -22,6 +22,8 @@ import { PassionsForm } from "@/components/admin/PassionsForm";
 import { ContactForm } from "@/components/admin/ContactForm";
 import { JsonEditor } from "@/components/admin/JsonEditor";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
+import { getAdminToken } from "@/lib/admin-session.client";
 
 type Tab = "aboutMe" | "lab" | "passions" | "gear" | "contactData";
 
@@ -35,6 +37,7 @@ const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
 
 export default function AdminDashboard() {
   const router = useRouter();
+  useAutoLogout();
   const [activeTab, setActiveTab] = useState<Tab>("aboutMe");
   const [viewMode, setViewMode] = useState<"form" | "json" | "split">("split");
   const [content, setContent] = useState<SiteContent | null>(null);
@@ -44,15 +47,21 @@ export default function AdminDashboard() {
   const [savedContentStrings, setSavedContentStrings] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const token = sessionStorage.getItem("admin_token");
-    if (!token) {
-      router.push("/admin");
-      return;
-    }
+    let cancelled = false;
 
-    fetch("/api/admin/content", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    (async () => {
+      const token = await getAdminToken();
+      if (cancelled) return;
+
+      if (!token) {
+        router.push("/admin");
+        return;
+      }
+
+      fetch("/api/admin/content", {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      })
       .then(res => {
         if (res.status === 401) {
           sessionStorage.removeItem("admin_token");
@@ -76,6 +85,11 @@ export default function AdminDashboard() {
         console.error(err);
         setIsLoading(false);
       });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const handleSave = useCallback(async () => {
@@ -83,15 +97,20 @@ export default function AdminDashboard() {
     
     setIsSaving(true);
     setSaveStatus("idle");
-    const token = sessionStorage.getItem("admin_token");
-    
+    const token = await getAdminToken();
+    if (!token) {
+      router.push("/admin");
+      return;
+    }
+
     try {
       const res = await fetch("/api/admin/content", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: JSON.stringify({
           section: activeTab,
           data: content[activeTab]
@@ -110,7 +129,7 @@ export default function AdminDashboard() {
     } finally {
       setIsSaving(false);
     }
-  }, [content, activeTab]);
+  }, [content, activeTab, router]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

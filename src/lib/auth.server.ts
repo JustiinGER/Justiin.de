@@ -8,9 +8,12 @@ import { verifyToken } from "./jwt.server";
 
 export function requireAuth(req: NextRequest): { username: string } | null {
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader?.startsWith("Bearer ")
+    ? authHeader.slice(7)
+    : req.cookies.get("admin_session")?.value;
 
-  const token = authHeader.slice(7);
+  if (!token) return null;
+
   const payload = verifyToken(token);
   if (!payload || typeof payload.username !== "string") return null;
 

@@ -6,18 +6,29 @@ import { Loader2, Palette } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { PasswordChangeSection } from "@/components/admin/PasswordChangeSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
+import { getAdminToken } from "@/lib/admin-session.client";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
+  useAutoLogout();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("admin_token");
-    if (!token) {
-      router.push("/admin");
-      return;
-    }
-    setIsLoading(false);
+    let cancelled = false;
+
+    getAdminToken().then((token) => {
+      if (cancelled) return;
+      if (!token) {
+        router.push("/admin");
+        return;
+      }
+      setIsLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   if (isLoading) {

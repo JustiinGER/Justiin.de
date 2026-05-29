@@ -5,18 +5,24 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getAdminToken } from "@/lib/admin-session.client";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (sessionStorage.getItem("admin_token")) {
-      router.push("/admin/dashboard");
-    }
+    getAdminToken().then((token) => {
+      if (token) {
+        router.push("/admin/dashboard");
+      } else {
+        setIsCheckingSession(false);
+      }
+    });
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,6 +42,8 @@ export default function AdminLogin() {
       if (res.ok && data.token) {
         sessionStorage.setItem("admin_token", data.token);
         router.push("/admin/dashboard");
+      } else if (res.status === 429) {
+        setError("Too many attempts. Please try again later.");
       } else {
         setError(data.error || "Login failed");
       }
@@ -45,6 +53,14 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-bg">
+        <Loader2 className="w-8 h-8 text-brand-accent animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-brand-bg">
