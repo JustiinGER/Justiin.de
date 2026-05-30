@@ -4,6 +4,7 @@ import { Fragment, useEffect, useState, useCallback } from "react";
 import { ScrollText, Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { getAdminToken } from "@/lib/admin-session.client";
 import { DiffView } from "@/components/admin/DiffView";
+import type { DiffLine } from "@/lib/json-diff";
 
 interface LogEntry {
   id: number;
