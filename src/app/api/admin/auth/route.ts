@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { getPool } from "@/lib/db.server";
 import { createToken } from "@/lib/jwt.server";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { adminSessionCookieOptions } from "@/lib/admin-cookie.server";
 import type { RowDataPacket } from "mysql2";
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
@@ -109,13 +110,11 @@ export async function POST(req: Request) {
 
     const response = NextResponse.json({ token });
 
-    response.cookies.set("admin_session", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 24 * 60 * 60, // 24 hours
-    });
+    response.cookies.set(
+      "admin_session",
+      token,
+      adminSessionCookieOptions(req.url, 24 * 60 * 60)
+    );
 
     return response;
   } catch (err) {

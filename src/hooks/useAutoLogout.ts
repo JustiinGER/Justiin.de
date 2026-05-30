@@ -11,7 +11,7 @@ export function useAutoLogout() {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/admin/logout", { method: "POST" });
+      await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
     } catch {
       // Ignore fetch errors
     }

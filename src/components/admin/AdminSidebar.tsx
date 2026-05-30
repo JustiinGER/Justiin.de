@@ -45,7 +45,7 @@ export function AdminSidebar({ activeNav, children }: AdminSidebarProps) {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/admin/logout", { method: "POST" });
+      await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
     } catch {
       // Ignore fetch errors, proceed with logout anyway
     }

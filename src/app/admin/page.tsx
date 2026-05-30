@@ -16,13 +16,20 @@ export default function AdminLogin() {
   const router = useRouter();
 
   useEffect(() => {
+    let cancelled = false;
+
     getAdminToken().then((token) => {
+      if (cancelled) return;
       if (token) {
         router.push("/admin/dashboard");
       } else {
         setIsCheckingSession(false);
       }
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -34,6 +41,7 @@ export default function AdminLogin() {
       const res = await fetch("/api/admin/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
@@ -41,6 +49,17 @@ export default function AdminLogin() {
 
       if (res.ok && data.token) {
         sessionStorage.setItem("admin_token", data.token);
+
+        const sessionRes = await fetch("/api/admin/session", { credentials: "include" });
+        const sessionData = sessionRes.ok ? await sessionRes.json() : null;
+        if (typeof sessionData?.token !== "string") {
+          sessionStorage.removeItem("admin_token");
+          setError(
+            "Login succeeded but your browser did not save the session cookie. Check cookie settings or use HTTPS."
+          );
+          return;
+        }
+
         router.push("/admin/dashboard");
       } else if (res.status === 429) {
         setError("Too many attempts. Please try again later.");
