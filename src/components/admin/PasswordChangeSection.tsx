@@ -121,14 +121,14 @@ export function PasswordChangeSection() {
   return (
     <section
       aria-label="Password settings"
-      className="rounded-2xl border border-brand-border bg-brand-card/50 p-6"
+      className="rounded-2xl border border-brand-border bg-brand-card/50 p-4 md:p-6"
     >
-      <div className="mb-6 flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-accent/10 text-brand-accent">
-          <Lock className="h-5 w-5" />
+      <div className="mb-4 md:mb-6 flex items-start gap-3">
+        <div className="flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl bg-brand-accent/10 text-brand-accent">
+          <Lock className="h-4 w-4 md:h-5 md:w-5" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-brand-text">Change Password</h2>
+          <h2 className="text-base md:text-lg font-semibold text-brand-text">Change Password</h2>
           <p className="mt-1 text-sm text-brand-muted">
             Update your admin login credentials.
           </p>

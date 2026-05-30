@@ -33,19 +33,19 @@ export function SortableItem({ id, index, children, onRemove }: SortableItemProp
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group bg-brand-card border border-brand-border rounded-2xl p-4 flex gap-4 hover:z-30 focus-within:z-40 ${
+      className={`relative group bg-brand-card border border-brand-border rounded-2xl p-3 sm:p-4 pr-8 sm:pr-10 flex gap-2 sm:gap-4 hover:z-30 focus-within:z-40 ${
         isDragging ? "shadow-2xl shadow-brand-accent/20 border-brand-accent/50 z-50" : ""
       }`}
     >
       <div
         {...attributes}
         {...listeners}
-        className="flex items-center justify-center w-8 cursor-grab hover:text-brand-accent text-brand-muted transition-colors"
+        className="flex items-center justify-center w-6 sm:w-8 shrink-0 cursor-grab hover:text-brand-accent text-brand-muted transition-colors"
       >
-        <GripVertical className="w-5 h-5" />
+        <GripVertical className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
 
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 min-w-0">
         {children}
       </div>
 

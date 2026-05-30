@@ -152,13 +152,13 @@ export function ActivityLog() {
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-brand-accent/10 text-brand-accent rounded-xl flex items-center justify-center">
-          <ScrollText className="w-5 h-5" />
+        <div className="w-9 h-9 md:w-10 md:h-10 bg-brand-accent/10 text-brand-accent rounded-xl flex items-center justify-center shrink-0">
+          <ScrollText className="w-4 h-4 md:w-5 md:h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-brand-text">Activity Log</h2>
-          <p className="text-sm text-brand-muted">
-            Recent admin actions — click an action to view changes
+          <h2 className="text-base md:text-lg font-semibold text-brand-text">Activity Log</h2>
+          <p className="text-xs md:text-sm text-brand-muted">
+            Recent admin actions — tap to view changes
           </p>
         </div>
       </div>
@@ -180,7 +180,83 @@ export function ActivityLog() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Mobile card view */}
+            <div className="md:hidden divide-y divide-brand-border">
+              {logs.map((log) => {
+                const actionInfo = actionLabels[log.action] || {
+                  label: log.action,
+                  color: "text-brand-muted bg-brand-card",
+                };
+                const canDiff =
+                  log.action === "content_save" || log.action === "rollback";
+                const isExpanded = expandedId === log.id;
+                const diffState = diffCache[log.id];
+
+                return (
+                  <div key={log.id} className={`p-3 ${isExpanded ? "bg-brand-card/40" : ""}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {canDiff ? (
+                            <button
+                              type="button"
+                              onClick={() => toggleDiff(log)}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition-all ${actionInfo.color}`}
+                              aria-expanded={isExpanded}
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="w-3 h-3" />
+                              ) : (
+                                <ChevronRight className="w-3 h-3" />
+                              )}
+                              {actionInfo.label}
+                            </button>
+                          ) : (
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${actionInfo.color}`}>
+                              {actionInfo.label}
+                            </span>
+                          )}
+                          {log.section && (
+                            <span className="text-xs text-brand-muted">
+                              {sectionLabels[log.section] || log.section}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-brand-muted mt-1">
+                          {log.username} · {new Date(log.created_at).toLocaleString("de-DE", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    {isExpanded && (
+                      <div className="mt-3 pt-3 border-t border-brand-border/50">
+                        {!diffState || diffState.status === "loading" ? (
+                          <div className="flex items-center gap-2 text-brand-muted text-sm py-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Loading diff…
+                          </div>
+                        ) : diffState.status === "loaded" ? (
+                          <DiffView lines={diffState.lines} isInitial={diffState.isInitial} />
+                        ) : diffState.status === "unavailable" ? (
+                          <p className="text-sm text-brand-muted py-2">
+                            {diffUnavailableMessages[diffState.reason] ?? "No diff available."}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-red-400 py-2">Failed to load diff.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table view */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-brand-border bg-brand-card/30">

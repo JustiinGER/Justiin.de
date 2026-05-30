@@ -44,24 +44,24 @@ export default function AdminMonitorPage() {
     <div className="min-h-screen bg-brand-bg flex">
       <AdminSidebar activeNav="monitor" />
 
-      <main className="flex-1 overflow-y-auto">
-        <header className="border-b border-brand-border bg-brand-card/30 px-8 py-8 backdrop-blur-md">
-          <h1 className="text-2xl font-semibold text-brand-text">Monitor</h1>
+      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
+        <header className="border-b border-brand-border bg-brand-card/30 px-4 md:px-8 py-6 md:py-8 backdrop-blur-md">
+          <h1 className="text-xl md:text-2xl font-semibold text-brand-text">Monitor</h1>
           <p className="mt-1 text-sm text-brand-muted">
             System health, content history, and activity logs.
           </p>
         </header>
 
-        <div className="mx-auto max-w-6xl space-y-8 p-8 pb-20">
-          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-6">
+        <div className="mx-auto max-w-6xl space-y-4 md:space-y-8 p-4 md:p-8 pb-20">
+          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-4 md:p-6">
             <HealthPanel />
           </div>
 
-          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-6">
+          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-4 md:p-6">
             <ContentHistory />
           </div>
 
-          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-6">
+          <div className="rounded-2xl border border-brand-border bg-brand-card/50 p-4 md:p-6">
             <ActivityLog />
           </div>
         </div>

@@ -350,25 +350,25 @@ export function ContentHistory() {
       )}
 
       <section className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-accent/10 text-brand-accent rounded-xl flex items-center justify-center">
-              <History className="w-5 h-5" />
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-brand-accent/10 text-brand-accent rounded-xl flex items-center justify-center shrink-0">
+              <History className="w-4 h-4 md:w-5 md:h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-brand-text">Content History</h2>
-              <p className="text-sm text-brand-muted">
+              <h2 className="text-base md:text-lg font-semibold text-brand-text">Content History</h2>
+              <p className="text-xs md:text-sm text-brand-muted">
                 Restore or download previous versions
               </p>
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative self-end sm:self-auto">
             <button
               type="button"
               onClick={() => setSectionMenuOpen((open) => !open)}
               onBlur={() => setTimeout(() => setSectionMenuOpen(false), 150)}
-              className="flex items-center gap-2 min-w-[9rem] px-3 py-2 rounded-lg border border-brand-border bg-brand-card text-brand-text text-sm font-sans focus:outline-none focus:ring-2 focus:ring-brand-accent/50 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="flex items-center gap-2 min-w-[8rem] md:min-w-[9rem] px-3 py-2 rounded-lg border border-brand-border bg-brand-card text-brand-text text-sm font-sans focus:outline-none focus:ring-2 focus:ring-brand-accent/50 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
               aria-haspopup="listbox"
               aria-expanded={sectionMenuOpen}
             >
@@ -441,30 +441,31 @@ export function ContentHistory() {
               {history.map((entry) => (
                 <div
                   key={entry.id}
-                  className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                  className={`flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-3 md:px-4 py-3 transition-colors ${
                     entry.pinned
                       ? "bg-brand-accent/5 hover:bg-brand-accent/10"
                       : "hover:bg-brand-card/50"
                   }`}
                 >
-                  {entry.pinned && (
-                    <Pin className="w-3.5 h-3.5 text-brand-accent shrink-0" aria-label="Pinned" />
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-brand-text">
-                      {new Date(entry.saved_at).toLocaleString("de-DE", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                    <p className="text-xs text-brand-muted">by {entry.saved_by}</p>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {entry.pinned && (
+                      <Pin className="w-3.5 h-3.5 text-brand-accent shrink-0" aria-label="Pinned" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm text-brand-text">
+                        {new Date(entry.saved_at).toLocaleString("de-DE", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p className="text-xs text-brand-muted">by {entry.saved_by}</p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0 self-end sm:self-auto">
                     {/* Download */}
                     <button
                       onClick={() => downloadEntry(entry)}
@@ -503,7 +504,7 @@ export function ContentHistory() {
                     {!entry.pinned && (
                       confirmDeleteId === entry.id ? (
                         <div className="flex items-center gap-1 ml-1">
-                          <span className="text-xs text-brand-muted">Delete?</span>
+                          <span className="text-xs text-brand-muted hidden sm:inline">Delete?</span>
                           <button
                             onClick={() => deleteEntry(entry.id)}
                             disabled={deleting === entry.id}
@@ -512,7 +513,7 @@ export function ContentHistory() {
                             {deleting === entry.id ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
                             ) : (
-                              "Ja"
+                              "Yes"
                             )}
                           </button>
                           <button
@@ -537,10 +538,10 @@ export function ContentHistory() {
                     {confirmDeleteId !== entry.id && (
                       <button
                         onClick={() => openPreview(entry)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-muted hover:text-brand-accent hover:bg-brand-accent/10 rounded-lg transition-all ml-1"
+                        className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs font-medium text-brand-muted hover:text-brand-accent hover:bg-brand-accent/10 rounded-lg transition-all ml-1"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
-                        Rollback
+                        <span className="hidden sm:inline">Rollback</span>
                       </button>
                     )}
                   </div>

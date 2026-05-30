@@ -34,7 +34,7 @@ export function AdminField({
   const wrapperClass = isCompact ? "" : "space-y-1.5";
 
   return (
-    <div className={`${wrapperClass} ${className}`}>
+    <div className={`min-w-0 ${wrapperClass} ${className}`}>
       <label className={labelClass}>{label}</label>
       {type === "textarea" ? (
         <textarea

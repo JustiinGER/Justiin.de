@@ -83,9 +83,9 @@ export function HealthPanel() {
   if (!data) return null;
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-brand-text">System Health</h2>
+        <h2 className="text-base md:text-lg font-semibold text-brand-text">System Health</h2>
         <button
           onClick={fetchHealth}
           disabled={isLoading}
@@ -95,10 +95,10 @@ export function HealthPanel() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="flex items-center gap-3 p-4 rounded-xl border border-brand-border bg-brand-card/50">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl border border-brand-border bg-brand-card/50">
           <div
-            className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+            className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 ${
               data.database.status === "ok"
                 ? "bg-green-500/10 text-green-400"
                 : data.database.status === "error"
@@ -106,10 +106,10 @@ export function HealthPanel() {
                 : "bg-yellow-500/10 text-yellow-400"
             }`}
           >
-            <Database className="w-5 h-5" />
+            <Database className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-brand-text">Database</p>
+          <div className="min-w-0">
+            <p className="text-xs md:text-sm font-medium text-brand-text truncate">Database</p>
             <p
               className={`text-xs ${
                 data.database.status === "ok"
@@ -133,25 +133,25 @@ export function HealthPanel() {
           return (
             <div
               key={widget.name}
-              className="flex items-center gap-3 p-4 rounded-xl border border-brand-border bg-brand-card/50"
+              className="flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl border border-brand-border bg-brand-card/50"
             >
               <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                className={`w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 ${
                   widget.configured
                     ? "bg-green-500/10 text-green-400"
                     : "bg-zinc-500/10 text-zinc-400"
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4 md:w-5 md:h-5" />
               </div>
-              <div>
-                <p className="text-sm font-medium text-brand-text">{widget.name}</p>
+              <div className="min-w-0">
+                <p className="text-xs md:text-sm font-medium text-brand-text truncate">{widget.name}</p>
                 <p
                   className={`text-xs ${
                     widget.configured ? "text-green-400" : "text-zinc-400"
                   }`}
                 >
-                  {widget.configured ? "Configured" : "Not configured"}
+                  {widget.configured ? "Configured" : "Not set"}
                 </p>
               </div>
             </div>
@@ -160,15 +160,15 @@ export function HealthPanel() {
       </div>
 
       <div>
-        <h3 className="text-sm font-medium text-brand-muted mb-3">Content Last Updated</h3>
-        <div className="flex flex-wrap gap-2">
+        <h3 className="text-xs md:text-sm font-medium text-brand-muted mb-2 md:mb-3">Content Last Updated</h3>
+        <div className="flex flex-wrap gap-1.5 md:gap-2">
           {["aboutMe", "lab", "passions", "gear", "contactData"].map((section) => {
             const update = data.sectionUpdates.find((u) => u.section === section);
             const hasUpdate = !!update?.updated_at;
             return (
               <div
                 key={section}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                className={`px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-xs font-medium ${
                   hasUpdate
                     ? "bg-brand-accent/10 text-brand-accent border border-brand-accent/20"
                     : "bg-zinc-500/10 text-zinc-400 border border-zinc-500/20"
@@ -176,7 +176,7 @@ export function HealthPanel() {
               >
                 <span>{sectionLabels[section] || section}</span>
                 {hasUpdate && (
-                  <span className="ml-2 opacity-70">
+                  <span className="hidden sm:inline ml-2 opacity-70">
                     {new Date(update.updated_at!).toLocaleDateString("de-DE", {
                       day: "2-digit",
                       month: "2-digit",

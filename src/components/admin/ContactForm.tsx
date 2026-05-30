@@ -66,14 +66,14 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
               const id = item.id || `contact-${idx}`;
               return (
                 <SortableItem key={id} id={id} index={idx} onRemove={() => removeItem(idx)}>
-                  <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
                     <div>
                       <label className="block text-xs font-medium text-brand-muted mb-1">Icon</label>
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
                     <AdminField label="Name" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
                     <AdminField label="URL (href)" size="compact" value={item.href} onChange={v => updateItem(idx, "href", v)} />
-                    <AdminField label="Hover Color Class" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
+                    <AdminField label="Hover Color" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
                   </div>
                 </SortableItem>
               );

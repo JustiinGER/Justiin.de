@@ -216,67 +216,98 @@ export default function AdminDashboard() {
       </AdminSidebar>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-20 border-b border-brand-border bg-brand-card/30 flex items-center justify-between px-8 backdrop-blur-md">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold text-brand-text flex items-center gap-2">
-              Editing: <span className="text-brand-accent">{tabs.find(t => t.id === activeTab)?.label}</span>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden pt-14 md:pt-0">
+        {/* Mobile Tab Selector */}
+        <div className="md:hidden border-b border-brand-border bg-brand-card/30 px-4 py-3 overflow-x-auto">
+          <div className="flex gap-2 min-w-max">
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              const isDirty = hasUnsavedChanges(tab.id);
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    isActive 
+                      ? "bg-brand-accent/10 text-brand-accent" 
+                      : "text-brand-muted hover:bg-black/5 dark:hover:bg-white/5 hover:text-brand-text"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? "text-brand-accent" : "text-brand-muted"}`} />
+                  {tab.label}
+                  {isDirty && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <header className="border-b border-brand-border bg-brand-card/30 px-4 md:px-8 py-3 md:py-4 backdrop-blur-md">
+          {/* Top row: Title + Save button */}
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-base md:text-xl font-semibold text-brand-text flex items-center gap-2 truncate">
+              <span className="hidden sm:inline">Editing:</span>
+              <span className="text-brand-accent truncate">{tabs.find(t => t.id === activeTab)?.label}</span>
             </h1>
             
+            <div className="flex items-center gap-2 md:gap-4 shrink-0">
+              <AnimatePresence>
+                {saveStatus === "success" && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                    className="hidden sm:flex items-center gap-1.5 text-sm text-green-400 bg-green-400/10 px-3 py-1.5 rounded-lg border border-green-400/20"
+                  >
+                    <Check className="w-4 h-4" /> Saved
+                  </motion.span>
+                )}
+                {saveStatus === "error" && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                    className="hidden sm:flex items-center gap-1.5 text-sm text-red-400 bg-red-400/10 px-3 py-1.5 rounded-lg border border-red-400/20"
+                  >
+                    <AlertCircle className="w-4 h-4" /> Error
+                  </motion.span>
+                )}
+              </AnimatePresence>
+              
+              <span className="text-xs text-brand-muted hidden lg:block select-none">Ctrl+S</span>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="relative flex items-center gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-brand-bg font-semibold rounded-xl transition-all disabled:opacity-50 text-sm"
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span className="hidden sm:inline">Save</span>
+                {hasUnsavedChanges(activeTab) && !isSaving && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse" />
+                )}
+              </button>
+            </div>
+          </div>
+          
+          {/* Bottom row: View mode toggle */}
+          <div className="flex items-center mt-3">
             <div className="flex items-center bg-brand-card border border-brand-border rounded-lg p-1">
               <button
                 onClick={() => setViewMode("form")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "form" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
+                className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${viewMode === "form" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
                 Form
               </button>
               <button
                 onClick={() => setViewMode("json")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "json" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
+                className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${viewMode === "json" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
                 JSON
               </button>
               <button
                 onClick={() => setViewMode("split")}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === "split" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
+                className={`hidden lg:block px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all ${viewMode === "split" ? "bg-brand-accent/10 text-brand-accent shadow-sm" : "text-brand-muted hover:text-brand-text"}`}
               >
-                Split View
-              </button>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <AnimatePresence>
-              {saveStatus === "success" && (
-                <motion.span 
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                  className="flex items-center gap-1.5 text-sm text-green-400 bg-green-400/10 px-3 py-1.5 rounded-lg border border-green-400/20"
-                >
-                  <Check className="w-4 h-4" /> Saved
-                </motion.span>
-              )}
-              {saveStatus === "error" && (
-                <motion.span 
-                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                  className="flex items-center gap-1.5 text-sm text-red-400 bg-red-400/10 px-3 py-1.5 rounded-lg border border-red-400/20"
-                >
-                  <AlertCircle className="w-4 h-4" /> Error saving
-                </motion.span>
-              )}
-            </AnimatePresence>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-brand-muted hidden lg:block select-none">Ctrl+S</span>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="relative flex items-center gap-2 px-5 py-2.5 bg-brand-accent hover:bg-brand-accent/90 text-brand-bg font-semibold rounded-xl transition-all disabled:opacity-50"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save Changes
-                {hasUnsavedChanges(activeTab) && !isSaving && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full animate-pulse" />
-                )}
+                Split
               </button>
             </div>
           </div>
@@ -284,11 +315,11 @@ export default function AdminDashboard() {
 
         <div className="flex-1 overflow-hidden flex">
           {/* Editor Side */}
-          <div className={`${viewMode === "split" ? "w-1/2 border-r border-brand-border" : "w-full"} h-full overflow-y-auto p-8`}>
-            <div className="max-w-4xl mx-auto space-y-8 pb-20">
+          <div className={`${viewMode === "split" ? "w-full lg:w-1/2 lg:border-r border-brand-border" : "w-full"} h-full overflow-y-auto p-4 md:p-8`}>
+            <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 pb-20">
               {viewMode === "json" ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-sm flex gap-3">
+                  <div className="p-3 md:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400 text-xs md:text-sm flex gap-3">
                     <AlertCircle className="w-5 h-5 shrink-0" />
                     <p>Advanced Mode: You are editing the raw JSON structure. Syntax errors will prevent saving.</p>
                   </div>
@@ -315,9 +346,9 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Preview Side */}
+          {/* Preview Side - Hidden on mobile/tablet, shows on lg+ */}
           {viewMode === "split" && (
-            <div className="w-1/2 h-full bg-brand-bg overflow-y-auto relative">
+            <div className="hidden lg:block w-1/2 h-full bg-brand-bg overflow-y-auto relative">
               <div className="sticky top-0 left-0 w-full h-10 bg-brand-card/80 border-b border-brand-border flex items-center justify-center text-xs font-semibold text-brand-muted uppercase tracking-widest z-50 backdrop-blur-sm">
                 Live Preview
               </div>

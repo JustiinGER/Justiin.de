@@ -67,12 +67,12 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                 return (
                   <SortableItem key={item.id} id={item.id} index={idx} onRemove={() => removeItem(idx)}>
                     <div className="space-y-4 w-full">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <AdminField label="Title (Small Header)" size="compact" value={item.title || ""} onChange={v => updateItem(idx, "title", v)} />
                         <AdminField label="Name (Main Header)" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-xs font-medium text-brand-muted mb-1">Main Icon</label>
                           <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
@@ -80,46 +80,28 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                         <AdminField label="Description" size="compact" value={item.desc || ""} onChange={v => updateItem(idx, "desc", v)} />
                       </div>
 
-                      <div className="grid grid-cols-3 gap-4">
-                        <AdminField label="CSS Class (Grid sizing)" size="compact" value={item.className || ""} onChange={v => updateItem(idx, "className", v)} />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <AdminField label="CSS Class" size="compact" value={item.className || ""} onChange={v => updateItem(idx, "className", v)} />
                         <AdminField label="Color Class" size="compact" value={item.color || ""} onChange={v => updateItem(idx, "color", v)} />
-                        <AdminField label="Bg Color Class" size="compact" value={item.bgColor || ""} onChange={v => updateItem(idx, "bgColor", v)} />
+                        <AdminField label="Bg Color" size="compact" value={item.bgColor || ""} onChange={v => updateItem(idx, "bgColor", v)} />
                       </div>
 
                       <div className="pt-2">
                         <label className="block text-xs font-medium text-brand-muted mb-2">Sub-Items (RAM, CPU, etc.)</label>
                         <div className="space-y-2">
                           {(item.items || []).map((subItem: any, sIdx: number) => (
-                            <div key={sIdx} className="group grid grid-cols-12 gap-2 bg-brand-bg p-2 rounded-lg border border-brand-border">
-                              <div className="col-span-2">
-                                <IconPicker value={subItem.icon} onChange={v => {
+                            <div key={sIdx} className="group bg-brand-bg p-2 rounded-lg border border-brand-border space-y-2">
+                              <div className="flex items-center gap-2">
+                                <IconPicker variant="icon-only" value={subItem.icon} onChange={v => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], icon: v };
                                   updateItem(idx, "items", newItems);
                                 }} />
-                              </div>
-                              <div className="col-span-3">
-                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.name} onChange={e => {
+                                <input className="flex-1 min-w-0 bg-brand-card border border-brand-border rounded-md px-2 py-1.5 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.name} onChange={e => {
                                   const newItems = [...(item.items || [])];
                                   newItems[sIdx] = { ...newItems[sIdx], name: e.target.value };
                                   updateItem(idx, "items", newItems);
-                                }} placeholder="e.g. CPU" />
-                              </div>
-                              <div className="col-span-3">
-                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.size} onChange={e => {
-                                  const newItems = [...(item.items || [])];
-                                  newItems[sIdx] = { ...newItems[sIdx], size: e.target.value };
-                                  updateItem(idx, "items", newItems);
-                                }} placeholder="e.g. 16 Core" />
-                              </div>
-                              <div className="col-span-3">
-                                <input className="w-full bg-brand-card border border-brand-border rounded-md px-2 py-1 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.type} onChange={e => {
-                                  const newItems = [...(item.items || [])];
-                                  newItems[sIdx] = { ...newItems[sIdx], type: e.target.value };
-                                  updateItem(idx, "items", newItems);
-                                }} placeholder="e.g. AMD Ryzen" />
-                              </div>
-                              <div className="col-span-1 flex items-center justify-center">
+                                }} placeholder="Name" />
                                 <RemoveButton
                                   onClick={() => {
                                     const newItems = [...(item.items || [])];
@@ -128,6 +110,18 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
                                   }}
                                   title="Remove sub-item"
                                 />
+                              </div>
+                              <div className="flex gap-2 pl-12">
+                                <input className="flex-1 min-w-0 bg-brand-card border border-brand-border rounded-md px-2 py-1.5 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.size} onChange={e => {
+                                  const newItems = [...(item.items || [])];
+                                  newItems[sIdx] = { ...newItems[sIdx], size: e.target.value };
+                                  updateItem(idx, "items", newItems);
+                                }} placeholder="Size" />
+                                <input className="flex-1 min-w-0 bg-brand-card border border-brand-border rounded-md px-2 py-1.5 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-accent/50" value={subItem.type} onChange={e => {
+                                  const newItems = [...(item.items || [])];
+                                  newItems[sIdx] = { ...newItems[sIdx], type: e.target.value };
+                                  updateItem(idx, "items", newItems);
+                                }} placeholder="Type" />
                               </div>
                             </div>
                           ))}
