@@ -24,7 +24,8 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
       name: "New Link",
       icon: "Link",
       url: "https://...",
-      color: "hover:text-blue-400"
+      color: "text-brand-accent",
+      bgColor: "bg-brand-accent/10",
     };
     onChange({ ...data, links: [...data.links, newItem] });
   };
@@ -72,8 +73,9 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
                     <AdminField label="Name" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
-                    <AdminField label="URL" size="compact" value={item.url} onChange={v => updateItem(idx, "url", v)} />
-                    <AdminField label="Hover Color" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
+                    <AdminField label="URL" size="compact" className="sm:col-span-2" value={item.url} onChange={v => updateItem(idx, "url", v)} />
+                    <AdminField label="Color Class" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
+                    <AdminField label="Bg Color" size="compact" value={item.bgColor || ""} onChange={v => updateItem(idx, "bgColor", v)} />
                   </div>
                 </SortableItem>
               );

@@ -25,7 +25,10 @@ export function GearForm({ data, onChange }: { data: any; onChange: (v: any) => 
       name: "New Gear",
       icon: "Monitor",
       title: "New Title",
-      desc: "New description"
+      desc: "New description",
+      className: "col-span-1 md:col-span-6 lg:col-span-4",
+      color: "text-brand-accent",
+      bgColor: "bg-brand-accent/10",
     };
     onChange({ ...data, items: [...data.items, newItem] });
   };
