@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import readline from "readline";
 import fs from "fs";
 import path from "path";
+import type { ExecuteValues } from "mysql2";
 import { getSchemaDDL, type Dialect } from "../src/lib/schema.server";
 
 // Minimal env parser — the script runs via tsx outside Next.js
@@ -46,7 +47,7 @@ async function buildMysqlAdapter(): Promise<SimpleAdapter> {
   return {
     dialect: "mysql",
     async exec(sql, params) {
-      const [result] = await db.execute(sql, params ?? []);
+      const [result] = await db.execute(sql, (params ?? []) as ExecuteValues);
       if (Array.isArray(result)) return { insertId: 0, rows: result };
       return { insertId: (result as { insertId: number }).insertId, rows: [] };
     },

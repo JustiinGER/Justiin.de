@@ -9,6 +9,7 @@
  * that is transitively bundled for the browser.
  */
 
+import type { ExecuteValues } from "mysql2";
 import type { Dialect } from "./schema.server";
 
 export type { Dialect };
@@ -41,11 +42,11 @@ function buildMysqlAdapter(): DbAdapter {
   return {
     dialect: "mysql",
     async query<T>(sql: string, params?: unknown[]) {
-      const [rows] = await pool.execute(sql, params);
+      const [rows] = await pool.execute(sql, params as ExecuteValues | undefined);
       return rows as T[];
     },
     async execute(sql: string, params?: unknown[]) {
-      const [result] = await pool.execute(sql, params) as [import("mysql2").ResultSetHeader, unknown];
+      const [result] = await pool.execute(sql, params as ExecuteValues | undefined) as [import("mysql2").ResultSetHeader, unknown];
       return { insertId: result.insertId, affectedRows: result.affectedRows };
     },
   };
