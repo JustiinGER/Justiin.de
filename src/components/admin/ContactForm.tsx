@@ -23,7 +23,7 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
       id: `link-${Date.now()}`,
       name: "New Link",
       icon: "Link",
-      href: "https://...",
+      url: "https://...",
       color: "hover:text-blue-400"
     };
     onChange({ ...data, links: [...data.links, newItem] });
@@ -72,7 +72,7 @@ export function ContactForm({ data, onChange }: { data: any; onChange: (v: any) 
                       <IconPicker value={item.icon} onChange={v => updateItem(idx, "icon", v)} />
                     </div>
                     <AdminField label="Name" size="compact" value={item.name} onChange={v => updateItem(idx, "name", v)} />
-                    <AdminField label="URL (href)" size="compact" value={item.href} onChange={v => updateItem(idx, "href", v)} />
+                    <AdminField label="URL" size="compact" value={item.url} onChange={v => updateItem(idx, "url", v)} />
                     <AdminField label="Hover Color" size="compact" value={item.color} onChange={v => updateItem(idx, "color", v)} />
                   </div>
                 </SortableItem>
