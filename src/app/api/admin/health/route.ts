@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth.server";
-import { getPool, isDbConfigured } from "@/lib/db.server";
+import { getDb, isDbConfigured } from "@/lib/db.server";
 import { getSectionUpdateTimes } from "@/lib/content.server";
+import { getSchemaDDL } from "@/lib/schema.server";
 
 interface WidgetStatus {
   name: string;
@@ -123,20 +124,34 @@ export async function GET(req: NextRequest) {
   let dbError: string | null = null;
   let dbLatencyMs: number | null = null;
   let dbSizeBytes: number | null = null;
-
-  let pool: import("mysql2/promise").Pool | null = null;
+  let dbReady = false;
 
   if (isDbConfigured()) {
     const dbStart = Date.now();
     try {
-      pool = getPool();
-      await pool.execute("SELECT 1");
+      const db = getDb();
+      await db.query("SELECT 1");
       dbLatencyMs = Date.now() - dbStart;
       dbStatus = "ok";
-      const [rows] = await pool.execute<{ size_bytes: number | null }[] & import("mysql2").RowDataPacket[]>(
-        "SELECT SUM(data_length + index_length) AS size_bytes FROM information_schema.tables WHERE table_schema = DATABASE()"
-      );
-      dbSizeBytes = rows[0]?.size_bytes ?? null;
+      dbReady = true;
+
+      if (db.dialect === "sqlite") {
+        const fs = await import("fs");
+        const path = await import("path");
+        const dbPath = process.env.SQLITE_PATH
+          ? path.resolve(process.env.SQLITE_PATH)
+          : path.resolve(process.cwd(), "data", "app.db");
+        try {
+          dbSizeBytes = fs.statSync(dbPath).size;
+        } catch {
+          dbSizeBytes = null;
+        }
+      } else {
+        const rows = await db.query<{ size_bytes: number | null }>(
+          "SELECT SUM(data_length + index_length) AS size_bytes FROM information_schema.tables WHERE table_schema = DATABASE()"
+        );
+        dbSizeBytes = rows[0]?.size_bytes ?? null;
+      }
     } catch (err) {
       dbLatencyMs = Date.now() - dbStart;
       dbStatus = "error";
@@ -147,24 +162,25 @@ export async function GET(req: NextRequest) {
   // Load cached probe results from DB
   let cachedProbes: ProbeResult[] | null = null;
   let probedAt: string | null = null;
-  if (pool && dbStatus === "ok") {
+  if (dbReady) {
     try {
-      await pool.execute(`
-        CREATE TABLE IF NOT EXISTS health_probe_cache (
-          id TINYINT UNSIGNED PRIMARY KEY DEFAULT 1,
-          probed_at DATETIME NOT NULL,
-          results JSON NOT NULL
-        )
-      `);
-      const [rows] = await pool.execute<import("mysql2").RowDataPacket[]>(
+      const db = getDb();
+      // Ensure table exists (lazy create)
+      const schemaDDL = getSchemaDDL(db.dialect);
+      const cacheDDL = schemaDDL.find((s) => s.includes("health_probe_cache"));
+      if (cacheDDL) await db.execute(cacheDDL);
+
+      const rows = await db.query<{ probed_at: unknown; results: unknown }>(
         "SELECT probed_at, results FROM health_probe_cache WHERE id = 1"
       );
       if (rows.length > 0) {
-        cachedProbes = JSON.parse(rows[0].results as string) as ProbeResult[];
-        probedAt = (rows[0].probed_at as Date).toISOString();
+        const raw = rows[0].results;
+        cachedProbes = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw)) as ProbeResult[];
+        const rawAt = rows[0].probed_at;
+        probedAt = rawAt instanceof Date ? rawAt.toISOString() : String(rawAt);
       }
     } catch {
-      // ignore — cache miss is fine
+      // cache miss is fine
     }
   }
 
@@ -199,13 +215,23 @@ export async function GET(req: NextRequest) {
     );
     finalProbedAt = new Date().toISOString();
 
-    if (pool && dbStatus === "ok") {
+    if (dbReady) {
       try {
-        await pool.execute(
-          `INSERT INTO health_probe_cache (id, probed_at, results) VALUES (1, NOW(), ?)
-           ON DUPLICATE KEY UPDATE probed_at = NOW(), results = VALUES(results)`,
-          [JSON.stringify(probes)]
-        );
+        const db = getDb();
+        const jsonProbes = JSON.stringify(probes);
+        if (db.dialect === "sqlite") {
+          await db.execute(
+            `INSERT INTO health_probe_cache (id, probed_at, results) VALUES (1, datetime('now'), ?)
+             ON CONFLICT(id) DO UPDATE SET probed_at = datetime('now'), results = excluded.results`,
+            [jsonProbes]
+          );
+        } else {
+          await db.execute(
+            `INSERT INTO health_probe_cache (id, probed_at, results) VALUES (1, NOW(), ?)
+             ON DUPLICATE KEY UPDATE probed_at = NOW(), results = VALUES(results)`,
+            [jsonProbes]
+          );
+        }
       } catch {
         // ignore
       }

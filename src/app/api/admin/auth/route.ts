@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getPool } from "@/lib/db.server";
+import { getDb } from "@/lib/db.server";
 import { createToken } from "@/lib/jwt.server";
 import { logAdminAction } from "@/lib/admin-log.server";
 import { adminSessionCookieOptions } from "@/lib/admin-cookie.server";
-import type { RowDataPacket } from "mysql2";
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const MAX_ATTEMPTS = 5;
@@ -81,8 +80,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
     }
 
-    const pool = getPool();
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const db = getDb();
+    const rows = await db.query<{ id: number; password: string }>(
       "SELECT id, password FROM admin_users WHERE username = ?",
       [username]
     );

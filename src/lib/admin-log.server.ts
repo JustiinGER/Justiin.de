@@ -2,10 +2,9 @@
  * Admin activity log — server-only.
  */
 
-import { getPool } from "./db.server";
+import { getDb, parseDateFromDb } from "./db.server";
 import { computeJsonDiff, type DiffLine } from "./json-diff";
 import { getHistoryEntryById } from "./content.server";
-import type { RowDataPacket } from "mysql2";
 
 export type AdminAction = "login" | "content_save" | "password_change" | "rollback" | "history_delete";
 
@@ -22,8 +21,8 @@ export async function logAdminAction(
   ip: string | null = null,
   details: AdminLogDetails | null = null
 ): Promise<void> {
-  const pool = getPool();
-  await pool.execute(
+  const db = getDb();
+  await db.execute(
     `INSERT INTO admin_log (username, action, section, ip, details) VALUES (?, ?, ?, ?, ?)`,
     [username, action, section, ip, details ? JSON.stringify(details) : null]
   );
@@ -52,15 +51,15 @@ function parseDetails(raw: unknown): AdminLogDetails | null {
   return null;
 }
 
-function mapLogRow(row: RowDataPacket): AdminLogEntry {
+function mapLogRow(row: Record<string, unknown>): AdminLogEntry {
   return {
-    id: row.id,
-    username: row.username,
-    action: row.action,
-    section: row.section,
-    ip: row.ip,
+    id: row.id as number,
+    username: row.username as string,
+    action: row.action as string,
+    section: row.section as string | null,
+    ip: row.ip as string | null,
     details: parseDetails(row.details),
-    created_at: row.created_at,
+    created_at: parseDateFromDb(row.created_at),
   };
 }
 
@@ -68,8 +67,8 @@ export async function getAdminLogs(
   limit: number = 50,
   offset: number = 0
 ): Promise<AdminLogEntry[]> {
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
+  const db = getDb();
+  const rows = await db.query<Record<string, unknown>>(
     `SELECT id, username, action, section, ip, details, created_at 
      FROM admin_log 
      ORDER BY created_at DESC 
@@ -81,8 +80,8 @@ export async function getAdminLogs(
 }
 
 export async function getAdminLogById(id: number): Promise<AdminLogEntry | null> {
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
+  const db = getDb();
+  const rows = await db.query<Record<string, unknown>>(
     `SELECT id, username, action, section, ip, details, created_at FROM admin_log WHERE id = ?`,
     [id]
   );

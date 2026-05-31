@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import type { RowDataPacket } from "mysql2";
 import { requireAuth } from "@/lib/auth.server";
-import { getPool } from "@/lib/db.server";
+import { getDb } from "@/lib/db.server";
 import { logAdminAction } from "@/lib/admin-log.server";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -31,8 +30,8 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const pool = getPool();
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const db = getDb();
+    const rows = await db.query<{ id: number; password: string }>(
       "SELECT id, password FROM admin_users WHERE username = ?",
       [user.username]
     );
@@ -49,7 +48,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const hash = await bcrypt.hash(newPassword, 10);
-    await pool.execute("UPDATE admin_users SET password = ? WHERE id = ?", [
+    await db.execute("UPDATE admin_users SET password = ? WHERE id = ?", [
       hash,
       dbUser.id,
     ]);

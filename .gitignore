@@ -52,3 +52,6 @@ next-env.d.ts
 AGENTS.md
 CLAUDE.md
 .agent/
+
+# SQLite database (auto-created at runtime)
+/data/

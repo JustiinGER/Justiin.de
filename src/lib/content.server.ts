@@ -1,13 +1,12 @@
 /**
  * Content layer — server-only.
- * Reads/writes site content overrides from MariaDB.
- * Falls back to data.ts defaults if DB is unavailable.
+ * Reads/writes site content overrides from the database.
+ * Falls back to data.ts defaults if the DB is unavailable.
  */
 
 import { aboutMe, passions, lab, contactData } from "./data";
 import { gearData } from "./data";
-import { getPool, isDbConfigured } from "./db.server";
-import type { RowDataPacket, ResultSetHeader } from "mysql2";
+import { getDb, isDbConfigured, parseDateFromDb } from "./db.server";
 
 export type ContentSection = "aboutMe" | "passions" | "lab" | "contactData" | "gear";
 
@@ -41,8 +40,8 @@ export async function getAllContent(): Promise<SiteContent> {
   }
 
   try {
-    const pool = getPool();
-    const [rows] = await pool.execute<RowDataPacket[]>(
+    const db = getDb();
+    const rows = await db.query<{ section: string; data: unknown }>(
       "SELECT section, data FROM site_content"
     );
 
@@ -61,12 +60,12 @@ export async function getAllContent(): Promise<SiteContent> {
         if (typeof dbData === "string") {
           try {
             dbData = JSON.parse(dbData);
-          } catch (e) {
+          } catch {
             console.warn(`[content.server] Failed to parse JSON for section ${section}`);
             continue;
           }
         }
-        
+
         (result as Record<string, unknown>)[section] = deepMerge(
           (defaults as Record<string, unknown>)[section],
           dbData
@@ -90,66 +89,70 @@ export async function writeContent(
   data: unknown,
   savedBy: string = "system"
 ): Promise<WriteContentResult> {
-  const pool = getPool();
+  const db = getDb();
   let historyId: number | null = null;
 
-  const [existing] = await pool.execute<RowDataPacket[]>(
+  const existing = await db.query<{ data: unknown }>(
     "SELECT data FROM site_content WHERE section = ?",
     [section]
   );
 
   if (existing.length > 0) {
     const oldData = existing[0].data;
-    const [insertResult] = await pool.execute<ResultSetHeader>(
+    const { insertId } = await db.execute(
       `INSERT INTO site_content_history (section, data, saved_by) VALUES (?, ?, ?)`,
       [section, typeof oldData === "string" ? oldData : JSON.stringify(oldData), savedBy]
     );
-    historyId = insertResult.insertId;
+    historyId = insertId;
 
-    const [countRows] = await pool.execute<RowDataPacket[]>(
+    const countRows = await db.query<{ cnt: number }>(
       `SELECT COUNT(*) AS cnt FROM site_content_history WHERE section = ? AND pinned = 0`,
       [section]
     );
     const unpinnedCount: number = countRows[0].cnt;
     if (unpinnedCount > 20) {
-      await pool.execute(
-        `DELETE FROM site_content_history
-         WHERE section = ? AND pinned = 0
-         ORDER BY saved_at ASC
-         LIMIT ?`,
-        [section, unpinnedCount - 20]
-      );
+      const excess = unpinnedCount - 20;
+      if (db.dialect === "sqlite") {
+        await db.execute(
+          `DELETE FROM site_content_history
+           WHERE id IN (
+             SELECT id FROM site_content_history
+             WHERE section = ? AND pinned = 0
+             ORDER BY saved_at ASC
+             LIMIT ?
+           )`,
+          [section, excess]
+        );
+      } else {
+        await db.execute(
+          `DELETE FROM site_content_history
+           WHERE section = ? AND pinned = 0
+           ORDER BY saved_at ASC
+           LIMIT ?`,
+          [section, excess]
+        );
+      }
     }
   }
 
-  await pool.execute(
-    `INSERT INTO site_content (section, data)
-     VALUES (?, ?)
-     ON DUPLICATE KEY UPDATE data = VALUES(data), updated_at = CURRENT_TIMESTAMP`,
-    [section, JSON.stringify(data)]
-  );
+  const jsonData = JSON.stringify(data);
+  if (db.dialect === "sqlite") {
+    await db.execute(
+      `INSERT INTO site_content (section, data, updated_at)
+       VALUES (?, ?, datetime('now'))
+       ON CONFLICT(section) DO UPDATE SET data = excluded.data, updated_at = datetime('now')`,
+      [section, jsonData]
+    );
+  } else {
+    await db.execute(
+      `INSERT INTO site_content (section, data)
+       VALUES (?, ?)
+       ON DUPLICATE KEY UPDATE data = VALUES(data), updated_at = CURRENT_TIMESTAMP`,
+      [section, jsonData]
+    );
+  }
 
   return { historyId };
-}
-
-export async function getHistoryEntryById(
-  id: number
-): Promise<ContentHistoryEntry | null> {
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT id, section, data, saved_by, pinned, saved_at FROM site_content_history WHERE id = ?`,
-    [id]
-  );
-  if (rows.length === 0) return null;
-  const row = rows[0];
-  return {
-    id: row.id,
-    section: row.section,
-    data: typeof row.data === "string" ? JSON.parse(row.data) : row.data,
-    saved_by: row.saved_by,
-    pinned: Boolean(row.pinned),
-    saved_at: row.saved_at,
-  };
 }
 
 export interface ContentHistoryEntry {
@@ -161,16 +164,50 @@ export interface ContentHistoryEntry {
   saved_at: Date;
 }
 
+export async function getHistoryEntryById(
+  id: number
+): Promise<ContentHistoryEntry | null> {
+  const db = getDb();
+  const rows = await db.query<{
+    id: number;
+    section: string;
+    data: unknown;
+    saved_by: string;
+    pinned: number;
+    saved_at: unknown;
+  }>(
+    `SELECT id, section, data, saved_by, pinned, saved_at FROM site_content_history WHERE id = ?`,
+    [id]
+  );
+  if (rows.length === 0) return null;
+  const row = rows[0];
+  return {
+    id: row.id,
+    section: row.section,
+    data: typeof row.data === "string" ? JSON.parse(row.data) : row.data,
+    saved_by: row.saved_by,
+    pinned: Boolean(row.pinned),
+    saved_at: parseDateFromDb(row.saved_at),
+  };
+}
+
 export async function getContentHistory(
   section: ContentSection,
   limit: number = 20
 ): Promise<ContentHistoryEntry[]> {
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT id, section, data, saved_by, pinned, saved_at 
-     FROM site_content_history 
-     WHERE section = ? 
-     ORDER BY pinned DESC, saved_at DESC 
+  const db = getDb();
+  const rows = await db.query<{
+    id: number;
+    section: string;
+    data: unknown;
+    saved_by: string;
+    pinned: number;
+    saved_at: unknown;
+  }>(
+    `SELECT id, section, data, saved_by, pinned, saved_at
+     FROM site_content_history
+     WHERE section = ?
+     ORDER BY pinned DESC, saved_at DESC
      LIMIT ?`,
     [section, limit]
   );
@@ -181,31 +218,31 @@ export async function getContentHistory(
     data: typeof row.data === "string" ? JSON.parse(row.data) : row.data,
     saved_by: row.saved_by,
     pinned: Boolean(row.pinned),
-    saved_at: row.saved_at,
+    saved_at: parseDateFromDb(row.saved_at),
   }));
 }
 
 export async function deleteHistoryEntry(id: number): Promise<boolean> {
-  const pool = getPool();
-  const [result] = await pool.execute<ResultSetHeader>(
+  const db = getDb();
+  const { affectedRows } = await db.execute(
     `DELETE FROM site_content_history WHERE id = ?`,
     [id]
   );
-  return result.affectedRows > 0;
+  return affectedRows > 0;
 }
 
 export async function setHistoryPinned(id: number, pinned: boolean): Promise<boolean> {
-  const pool = getPool();
-  const [result] = await pool.execute<ResultSetHeader>(
+  const db = getDb();
+  const { affectedRows } = await db.execute(
     `UPDATE site_content_history SET pinned = ? WHERE id = ?`,
     [pinned ? 1 : 0, id]
   );
-  return result.affectedRows > 0;
+  return affectedRows > 0;
 }
 
 export async function getCurrentContent(section: ContentSection): Promise<unknown | null> {
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
+  const db = getDb();
+  const rows = await db.query<{ data: unknown }>(
     "SELECT data FROM site_content WHERE section = ?",
     [section]
   );
@@ -225,9 +262,9 @@ export async function rollbackContent(
   historyId: number,
   rolledBackBy: string
 ): Promise<RollbackResult | null> {
-  const pool = getPool();
+  const db = getDb();
 
-  const [rows] = await pool.execute<RowDataPacket[]>(
+  const rows = await db.query<{ section: string; data: unknown }>(
     "SELECT section, data FROM site_content_history WHERE id = ?",
     [historyId]
   );
@@ -238,7 +275,7 @@ export async function rollbackContent(
   const parsedData = typeof data === "string" ? JSON.parse(data) : data;
   const contentSection = section as ContentSection;
 
-  const [current] = await pool.execute<RowDataPacket[]>(
+  const current = await db.query<{ data: unknown }>(
     "SELECT data FROM site_content WHERE section = ?",
     [contentSection]
   );
@@ -273,13 +310,13 @@ export async function getSectionUpdateTimes(): Promise<SectionUpdateTime[]> {
     return [];
   }
 
-  const pool = getPool();
-  const [rows] = await pool.execute<RowDataPacket[]>(
+  const db = getDb();
+  const rows = await db.query<{ section: string; updated_at: unknown }>(
     "SELECT section, updated_at FROM site_content"
   );
 
   return rows.map((row) => ({
     section: row.section,
-    updated_at: row.updated_at,
+    updated_at: row.updated_at ? parseDateFromDb(row.updated_at) : null,
   }));
 }
