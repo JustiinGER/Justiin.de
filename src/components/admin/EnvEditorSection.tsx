@@ -1010,8 +1010,8 @@ export function EnvEditorSection() {
   const handleChange = useCallback(
     (id: string, field: "key" | "value", val: string) => {
       if (field === "value") {
-        const line = lines.find((l) => l.id === id && l.type === "var");
-        if (line && isCriticalEnvKey(envKeyName(line.key))) {
+        const line = lines.find((l) => l.id === id);
+        if (line?.type === "var" && isCriticalEnvKey(envKeyName(line.key))) {
           const orig = originalValueForKey(original, line.key);
           if (orig !== undefined && orig.trim() !== "" && val.trim() === "") {
             setPendingCritical({ id, key: envKeyName(line.key), action: "clear" });
@@ -1112,10 +1112,10 @@ export function EnvEditorSection() {
     setSaveError("");
   };
 
-  const visibleFormLines = (blockLines: LineWithId[]) =>
-    blockLines.filter((l) => l.type === "var");
+  const visibleFormLines = (blockLines: LineWithId[]): (LineWithId & { type: "var" })[] =>
+    blockLines.filter((l): l is LineWithId & { type: "var" } => l.type === "var");
 
-  const renderFormLine = (line: LineWithId) => {
+  const renderFormLine = (line: LineWithId & { type: "var" }) => {
     const origVal = originalValueForKey(original, line.key);
     const isProtected =
       isCriticalEnvKey(envKeyName(line.key)) &&
