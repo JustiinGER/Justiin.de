@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { requireAuth } from "@/lib/auth.server";
+import { requireAuth, verifyAdminPassword } from "@/lib/auth.server";
 import { getDb } from "@/lib/db.server";
 import { logAdminAction } from "@/lib/admin-log.server";
 
@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const dbUser = rows[0];
-    const isValid = await bcrypt.compare(currentPassword, dbUser.password);
+    const isValid = await verifyAdminPassword(user.username, currentPassword);
 
     if (!isValid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });

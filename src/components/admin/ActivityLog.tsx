@@ -29,6 +29,7 @@ const actionLabels: Record<string, { label: string; color: string }> = {
   password_change: { label: "Password Change", color: "text-yellow-400 bg-yellow-500/10" },
   rollback: { label: "Rollback", color: "text-purple-400 bg-purple-500/10" },
   history_delete: { label: "History Delete", color: "text-red-400 bg-red-500/10" },
+  env_save: { label: "Env Save", color: "text-cyan-400 bg-cyan-500/10" },
 };
 
 const sectionLabels: Record<string, string> = {
@@ -132,7 +133,7 @@ export function ActivityLog() {
   };
 
   const toggleDiff = (log: LogEntry) => {
-    const canDiff = log.action === "content_save" || log.action === "rollback";
+    const canDiff = log.action === "content_save" || log.action === "rollback" || log.action === "env_save";
     if (!canDiff) return;
 
     if (expandedId === log.id) {
@@ -189,7 +190,7 @@ export function ActivityLog() {
                   color: "text-brand-muted bg-brand-card",
                 };
                 const canDiff =
-                  log.action === "content_save" || log.action === "rollback";
+                  log.action === "content_save" || log.action === "rollback" || log.action === "env_save";
                 const isExpanded = expandedId === log.id;
                 const diffState = diffCache[log.id];
 
@@ -285,7 +286,7 @@ export function ActivityLog() {
                       color: "text-brand-muted bg-brand-card",
                     };
                     const canDiff =
-                      log.action === "content_save" || log.action === "rollback";
+                      log.action === "content_save" || log.action === "rollback" || log.action === "env_save";
                     const isExpanded = expandedId === log.id;
                     const diffState = diffCache[log.id];
 

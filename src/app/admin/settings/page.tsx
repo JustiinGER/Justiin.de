@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Palette } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { EnvEditorSection } from "@/components/admin/EnvEditorSection";
 import { PasswordChangeSection } from "@/components/admin/PasswordChangeSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
@@ -71,6 +72,8 @@ export default function AdminSettingsPage() {
           </section>
 
           <PasswordChangeSection />
+
+          <EnvEditorSection />
         </div>
       </main>
     </div>

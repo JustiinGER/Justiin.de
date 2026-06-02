@@ -6,7 +6,7 @@ import { getDb, parseDateFromDb } from "./db.server";
 import { computeJsonDiff, type DiffLine } from "./json-diff";
 import { getHistoryEntryById } from "./content.server";
 
-export type AdminAction = "login" | "content_save" | "password_change" | "rollback" | "history_delete";
+export type AdminAction = "login" | "content_save" | "password_change" | "rollback" | "history_delete" | "env_save";
 
 export interface AdminLogDetails {
   historyId?: number;
@@ -90,7 +90,7 @@ export async function getAdminLogById(id: number): Promise<AdminLogEntry | null>
 }
 
 export function actionSupportsDiff(action: string): boolean {
-  return action === "content_save" || action === "rollback";
+  return action === "content_save" || action === "rollback" || action === "env_save";
 }
 
 export async function getLogDiff(
