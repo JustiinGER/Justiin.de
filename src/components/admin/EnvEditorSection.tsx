@@ -971,7 +971,14 @@ export function EnvEditorSection() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: "include",
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to load");
+      if (!res.ok) {
+        if (res.status === 401) {
+          sessionStorage.removeItem("admin_token");
+          window.location.href = "/admin";
+          return;
+        }
+        throw new Error((await res.json()).error ?? "Failed to load");
+      }
       const data = (await res.json()) as {
         lines: EnvLine[];
         hints?: Record<string, string>;
@@ -1064,6 +1071,10 @@ export function EnvEditorSection() {
 
   const handleConfirmReset = async () => {
     if (!resetPassword) return;
+
+    const effectiveLines = withIds(parseEnvFile(rawExample));
+    const removals = getCriticalRemovals(original, effectiveLines);
+
     setIsResetting(true);
     setResetPasswordError("");
     try {
@@ -1075,20 +1086,42 @@ export function EnvEditorSection() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
-        body: JSON.stringify({ rawContent: rawExample, currentPassword: resetPassword }),
+        body: JSON.stringify({
+          rawContent: rawExample,
+          currentPassword: resetPassword,
+          ...(removals.length > 0 ? { confirmCriticalRemoval: removals } : {}),
+        }),
       });
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 401) {
-          setResetPasswordError(json.error ?? "Incorrect password");
-        } else {
-          setResetPasswordError(json.error ?? "Reset failed");
+          if (json.error?.toLowerCase().includes("password")) {
+            setResetPasswordError(json.error ?? "Incorrect password");
+          } else {
+            sessionStorage.removeItem("admin_token");
+            window.location.href = "/admin";
+          }
+          return;
         }
+        setResetPasswordError(json.error ?? "Reset failed");
         return;
       }
+
       setShowResetConfirm(false);
       setResetPassword("");
       setResetPasswordError("");
+
+      const changes = computeChanges(original, effectiveLines);
+      if (changes.some((c) => c.key === "JWT_SECRET")) {
+        sessionStorage.removeItem("admin_token");
+        setOriginal(effectiveLines);
+        setOriginalRaw(rawExample);
+        setTimeout(() => {
+          window.location.href = "/admin";
+        }, 10);
+        return;
+      }
+
       await load();
     } catch {
       setResetPasswordError("Reset failed — please try again");
@@ -1262,11 +1295,29 @@ export function EnvEditorSection() {
 
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 401 && data.error?.toLowerCase().includes("password")) {
-          setSavePasswordError(data.error);
+        if (res.status === 401) {
+          if (data.error?.toLowerCase().includes("password")) {
+            setSavePasswordError(data.error);
+          } else {
+            sessionStorage.removeItem("admin_token");
+            window.location.href = "/admin";
+          }
           return;
         }
         throw new Error(data.error ?? "Save failed");
+      }
+
+      if (pendingChanges?.some((c) => c.key === "JWT_SECRET")) {
+        sessionStorage.removeItem("admin_token");
+        if (viewMode === "raw") {
+          setOriginalRaw(rawText);
+        } else {
+          setOriginal(lines.map((l) => ({ ...l })));
+        }
+        setTimeout(() => {
+          window.location.href = "/admin";
+        }, 10);
+        return;
       }
 
       if (viewMode === "raw") {

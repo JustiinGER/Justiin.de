@@ -7,6 +7,7 @@ import { logAdminAction } from "@/lib/admin-log.server";
 import { CRITICAL_ENV_KEYS } from "@/lib/env-critical";
 import {
   type EnvLine,
+  envKeyName,
   parseEnvFile,
   serializeEnvFile,
   buildVarMapFromLines,
@@ -75,7 +76,10 @@ function isSensitiveKey(key: string): boolean {
 function buildRedactedMap(lines: EnvLine[]): Record<string, string> {
   const map: Record<string, string> = {};
   for (const l of lines) {
-    if (l.type === "var") map[l.key] = isSensitiveKey(l.key) ? "***" : l.value;
+    if (l.type === "var") {
+      const name = envKeyName(l.key);
+      if (name) map[name] = isSensitiveKey(name) ? "***" : l.value;
+    }
   }
   return map;
 }
@@ -99,7 +103,12 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const content = await fs.readFile(ENV_FILE, "utf-8");
+    let content = "";
+    try {
+      content = await fs.readFile(ENV_FILE, "utf-8");
+    } catch (err: any) {
+      if (err.code !== "ENOENT") throw err;
+    }
     const lines = parseEnvFile(content);
     const { hints, missingFromTemplate } = await loadExampleMetadata(lines);
     let rawExample: string | undefined;

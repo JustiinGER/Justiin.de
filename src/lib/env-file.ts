@@ -52,7 +52,8 @@ export function serializeEnvValue(value: string): string {
 }
 
 export function parseEnvFile(content: string): EnvLine[] {
-  const raw = content.endsWith("\n") ? content.slice(0, -1) : content;
+  const normalized = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const raw = normalized.endsWith("\n") ? normalized.slice(0, -1) : normalized;
   return raw.split("\n").map((line): EnvLine => {
     const trimmed = line.trim();
     if (trimmed === "") return { type: "blank" };
