@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { SpecBadge } from "./ui/SpecBadge";
 import { aboutMe as defaultAboutMe } from "@/lib/data";
+import { HomeAssistant } from "./HomeAssistant";
 
 export function Hero({ data = defaultAboutMe }: { data?: typeof defaultAboutMe }) {
   const [text, setText] = useState("");
@@ -57,18 +58,20 @@ export function Hero({ data = defaultAboutMe }: { data?: typeof defaultAboutMe }
             {data.title}
           </motion.div>
 
-          <motion.h1 
-            variants={fadeUp}
-            className="text-4xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-slate-900 dark:text-white min-h-[1.2em]"
-            aria-label={fullText}
-          >
-            <span aria-hidden="true">{text}</span>
-            <span className="animate-pulse font-light text-brand-accent" aria-hidden="true">|</span>
-          </motion.h1>
+          <div className="relative">
+            <motion.h1 
+              variants={fadeUp}
+              className="text-4xl sm:text-7xl lg:text-8xl font-bold tracking-tighter text-slate-900 dark:text-white min-h-[1.2em]"
+              aria-label={fullText}
+            >
+              <span aria-hidden="true">{text}</span>
+              <span className="animate-pulse font-light text-brand-accent" aria-hidden="true">|</span>
+            </motion.h1>
+          </div>
 
           <motion.p 
             variants={fadeUp}
-            className="mt-4 text-lg sm:text-2xl leading-relaxed text-slate-700 dark:text-slate-300 max-w-3xl font-medium px-2 sm:px-0"
+            className="mt-6 text-lg sm:text-2xl leading-relaxed text-slate-700 dark:text-slate-300 max-w-3xl font-medium px-2 sm:px-0"
           >
             {data.tagline}
           </motion.p>
@@ -79,6 +82,9 @@ export function Hero({ data = defaultAboutMe }: { data?: typeof defaultAboutMe }
                 {fact}
               </SpecBadge>
             ))}
+          </motion.div>
+          <motion.div variants={fadeUp} className="flex justify-center mt-2">
+            <HomeAssistant />
           </motion.div>
         </motion.div>
 
