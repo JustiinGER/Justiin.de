@@ -1,25 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Thermometer, Droplets, Activity } from "lucide-react";
+import { Thermometer, Droplets, Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { SensorHistoryModal } from "./SensorHistoryModal";
+import type { HAData, SensorData, SensorTrend } from "@/types/homeassistant";
 
-interface SensorData {
-  key: string;
-  name: string;
-  state: string;
-  unit: string;
-  device_class: string;
-}
+function TrendIndicator({ trend, deviceClass }: { trend: SensorTrend | null; deviceClass: string }) {
+  if (!trend) return null;
 
-interface SensorGroup {
-  label: string | null;
-  sensors: SensorData[];
-}
+  const className =
+    trend === "up"
+      ? deviceClass === "temperature"
+        ? "text-orange-400"
+        : deviceClass === "humidity"
+        ? "text-blue-400"
+        : "text-emerald-500"
+      : trend === "down"
+      ? deviceClass === "temperature"
+        ? "text-sky-400"
+        : deviceClass === "humidity"
+        ? "text-orange-400"
+        : "text-rose-400"
+      : "text-slate-400 dark:text-slate-500";
 
-interface HAData {
-  configured: boolean;
-  groups: SensorGroup[];
+  const Icon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+
+  return <Icon className={`w-3 h-3 ${className}`} aria-hidden="true" />;
 }
 
 export function HomeAssistant() {
@@ -62,15 +68,23 @@ export function HomeAssistant() {
 
   const hasLabels = data.groups.some((g) => g.label);
 
+  const selectedLive = selectedSensor
+    ? (() => {
+        const state = Number.parseFloat(selectedSensor.state);
+        return !Number.isNaN(state)
+          ? { state, time: selectedSensor.last_changed }
+          : null;
+      })()
+    : null;
+
   return (
     <>
       <div className="flex items-center justify-center gap-4 flex-wrap">
         {data.groups.map((group, groupIdx) => (
-          <div 
-            key={groupIdx} 
+          <div
+            key={groupIdx}
             className="flex items-stretch rounded-full border border-brand-border bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shadow-sm overflow-hidden"
           >
-            {/* Label Section */}
             {hasLabels && group.label && (
               <div className="flex items-center justify-center px-4 bg-black/5 dark:bg-white/5 border-r border-brand-border/50">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 select-none">
@@ -79,15 +93,14 @@ export function HomeAssistant() {
               </div>
             )}
 
-            {/* Sensors Section */}
-              {group.sensors.map((sensor, idx) => (
-                <button
-                  key={sensor.key}
-                  onClick={() => setSelectedSensor(sensor)}
+            {group.sensors.map((sensor, idx) => (
+              <button
+                key={sensor.key}
+                onClick={() => setSelectedSensor(sensor)}
                 className={`group focus:outline-none flex items-center gap-1.5 px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${
                   idx > 0 ? "border-l border-brand-border/50" : ""
                 }`}
-                  title={`View history for ${sensor.name}`}
+                title={`View history for ${sensor.name}`}
               >
                 <span
                   className={
@@ -100,9 +113,10 @@ export function HomeAssistant() {
                 >
                   {getIcon(sensor.device_class)}
                 </span>
-                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap flex items-center gap-1">
                   {sensor.state}
-                  <span className="text-[10px] ml-0.5 text-brand-muted font-medium">{sensor.unit}</span>
+                  <span className="text-[10px] text-brand-muted font-medium">{sensor.unit}</span>
+                  <TrendIndicator trend={sensor.trend} deviceClass={sensor.device_class} />
                 </span>
               </button>
             ))}
@@ -117,6 +131,7 @@ export function HomeAssistant() {
         name={selectedSensor?.name || ""}
         unit={selectedSensor?.unit || ""}
         deviceClass={selectedSensor?.device_class || ""}
+        live={selectedLive}
       />
     </>
   );

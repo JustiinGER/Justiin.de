@@ -1,124 +1,101 @@
 import { NextResponse } from "next/server";
+import {
+  computeTrend,
+  fetchHaSensorState,
+  fetchHaStatistics,
+  getHaCredentials,
+  isHaConfigured,
+  parseSensorGroups,
+  type ParsedSensorEntry,
+} from "@/lib/homeassistant.server";
+import type { SensorData, SensorGroup } from "@/types/homeassistant";
 
-export const revalidate = 0; // always live; never caches the HA token
+export const revalidate = 60; // cache HA responses for 60s (aligned with client poll); token stays in process.env
 
-interface SensorResult {
-  key: string;   // opaque client-facing key — never the real HA entity ID
-  name: string;
-  state: string;
-  unit: string;
-  device_class: string;
-}
+const LIVE_REVALIDATE = 60;
 
-async function fetchSensor(
+async function buildSensorData(
   baseUrl: string,
-  haToken: string,
-  entityId: string,
-  opaqueKey: string,
-  customName?: string
-): Promise<SensorResult> {
-  const response = await fetch(`${baseUrl}/api/states/${entityId}`, {
-    headers: {
-      Authorization: `Bearer ${haToken}`,
-      "Content-Type": "application/json",
-    },
-    signal: AbortSignal.timeout(5000),
-    next: { revalidate: 0 },
-  });
-
-  if (!response.ok) {
-    throw new Error(`HA API returned ${response.status} for entity`);
+  token: string,
+  entry: ParsedSensorEntry,
+  statisticsByEntity: Record<string, { start: string; mean?: number }[]>
+): Promise<SensorData | null> {
+  const data = await fetchHaSensorState(baseUrl, token, entry.entityId, LIVE_REVALIDATE);
+  if (!data?.state || data.state === "unavailable" || data.state === "unknown") {
+    return null;
   }
 
-  const data = await response.json();
+  const deviceClass = data.attributes?.device_class ?? "";
+  const numericState = Number.parseFloat(data.state);
+  const trend = Number.isFinite(numericState)
+    ? computeTrend(numericState, deviceClass, statisticsByEntity[entry.entityId] ?? [])
+    : null;
+
   return {
-    key: opaqueKey,
-    // Never fall back to entity_id — use a generic label if no name available
-    name: customName || data.attributes?.friendly_name || "Sensor",
+    key: entry.key,
+    name: entry.displayName || data.attributes?.friendly_name || "Sensor",
     state: data.state,
-    unit: data.attributes?.unit_of_measurement || "",
-    device_class: data.attributes?.device_class || "",
+    unit: data.attributes?.unit_of_measurement ?? "",
+    device_class: deviceClass,
+    last_changed: data.last_changed ?? new Date().toISOString(),
+    trend,
   };
 }
 
 export async function GET() {
-  const haUrl = process.env.HA_URL;
-  const haToken = process.env.HA_TOKEN;
-  const haGroups = process.env.HA_SENSOR_GROUPS;
-  const haSensors = process.env.HA_SENSORS;
-
-  if (!haUrl || !haToken || (!haGroups && !haSensors)) {
+  if (!isHaConfigured()) {
     return NextResponse.json({ configured: false, groups: [] }, { status: 200 });
   }
 
-  let baseUrl = haUrl.replace(/\/$/, "");
-  if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
-    baseUrl = `https://${baseUrl}`;
+  const credentials = getHaCredentials();
+  if (!credentials) {
+    return NextResponse.json({ configured: false, groups: [] }, { status: 200 });
+  }
+
+  const { baseUrl, token } = credentials;
+  const parsedGroups = parseSensorGroups();
+
+  if (parsedGroups.length === 0) {
+    return NextResponse.json({ configured: true, groups: [] }, { status: 200 });
   }
 
   try {
-    // HA_SENSOR_GROUPS takes precedence over HA_SENSORS
-    // Format: "Indoor:sensor.a=Name,sensor.b=Name|Outdoor:sensor.c,sensor.d"
-    if (haGroups) {
-      const groupDefs = haGroups.split("|").map((g) => g.trim()).filter(Boolean);
+    const allEntries = parsedGroups.flatMap((group) => group.sensors);
+    const entityIds = allEntries.map((entry) => entry.entityId);
 
-      const groups = await Promise.all(
-        groupDefs.map(async (groupDef, groupIdx) => {
-          const colonIdx = groupDef.indexOf(":");
-          const label = colonIdx > -1 ? groupDef.slice(0, colonIdx).trim() : "";
+    const end = new Date();
+    const trendStart = new Date(end.getTime() - 4 * 60 * 60 * 1000);
 
-          const entityDefs = groupDef
-            .slice(colonIdx + 1)
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .map((entry, sensorIdx) => {
-              const eqIdx = entry.indexOf("=");
-              return {
-                id: eqIdx > -1 ? entry.slice(0, eqIdx).trim() : entry,
-                name: eqIdx > -1 ? entry.slice(eqIdx + 1).trim() : undefined,
-                key: `g${groupIdx}-s${sensorIdx}`, // opaque key
-              };
-            });
-
-          const sensors = await Promise.all(
-            entityDefs.map(({ id, name, key }) =>
-              fetchSensor(baseUrl, haToken, id, key, name)
-            )
-          );
-
-          return { label, sensors };
-        })
-      );
-
-      return NextResponse.json({ configured: true, groups });
-    }
-
-    // Fallback: flat HA_SENSORS list as a single unlabelled group
-    const entityDefs = haSensors!
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .map((entry, sensorIdx) => {
-        const eqIdx = entry.indexOf("=");
-        return {
-          id: eqIdx > -1 ? entry.slice(0, eqIdx).trim() : entry,
-          name: eqIdx > -1 ? entry.slice(eqIdx + 1).trim() : undefined,
-          key: `g0-s${sensorIdx}`,
-        };
-      });
-
-    if (entityDefs.length === 0) {
-      return NextResponse.json({ configured: true, groups: [] }, { status: 200 });
-    }
-
-    const sensors = await Promise.all(
-      entityDefs.map(({ id, name, key }) =>
-        fetchSensor(baseUrl, haToken, id, key, name)
-      )
+    const { statistics: statisticsByEntity } = await fetchHaStatistics(
+      baseUrl,
+      token,
+      entityIds,
+      trendStart,
+      end,
+      LIVE_REVALIDATE
     );
 
-    return NextResponse.json({ configured: true, groups: [{ label: null, sensors }] });
+    const groups: SensorGroup[] = await Promise.all(
+      parsedGroups.map(async (group) => {
+        const results = await Promise.allSettled(
+          group.sensors.map((entry) =>
+            buildSensorData(baseUrl, token, entry, statisticsByEntity)
+          )
+        );
+
+        const sensors = results
+          .filter(
+            (result): result is PromiseFulfilledResult<SensorData | null> =>
+              result.status === "fulfilled"
+          )
+          .map((result) => result.value)
+          .filter((sensor): sensor is SensorData => sensor !== null);
+
+        return { label: group.label, sensors };
+      })
+    );
+
+    return NextResponse.json({ configured: true, groups });
   } catch (error) {
     console.error("[homeassistant] fetch failed:", error);
     return NextResponse.json(

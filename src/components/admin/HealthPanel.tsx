@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Database, Radio, Bird, Gamepad2, Activity, Loader2, RefreshCw } from "lucide-react";
+import { Database, Radio, Bird, Gamepad2, Activity, Loader2, RefreshCw, Thermometer } from "lucide-react";
 import { getAdminToken } from "@/lib/admin-session.client";
 
 const PROBE_INTERVAL_MS = 30 * 60 * 1000;
@@ -52,6 +52,7 @@ const widgetIcons: Record<string, React.ElementType> = {
   BirdNET: Bird,
   Steam: Gamepad2,
   "Uptime Kuma": Activity,
+  "Home Assistant": Thermometer,
 };
 
 export function HealthPanel() {

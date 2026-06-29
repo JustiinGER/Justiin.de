@@ -4,6 +4,11 @@ import { requireAuth } from "@/lib/auth.server";
 import { getDb, isDbConfigured } from "@/lib/db.server";
 import { getSectionUpdateTimes } from "@/lib/content.server";
 import { getSchemaDDL } from "@/lib/schema.server";
+import {
+  countConfiguredSensors,
+  getHaCredentials,
+  isHaConfigured,
+} from "@/lib/homeassistant.server";
 
 interface WidgetStatus {
   name: string;
@@ -78,6 +83,46 @@ async function probeSteam(): Promise<ProbeResult> {
     return { name, status: "ok", latencyMs, details, error: null };
   } catch (err) {
     return { name, status: "error", latencyMs: Date.now() - start, details: null, error: err instanceof Error ? err.message : "Unknown error" };
+  }
+}
+
+async function probeHomeAssistant(): Promise<ProbeResult> {
+  const name = "Home Assistant";
+  if (!isHaConfigured()) {
+    return { name, status: "not_configured", latencyMs: null, details: null, error: null };
+  }
+
+  const credentials = getHaCredentials();
+  if (!credentials) {
+    return { name, status: "not_configured", latencyMs: null, details: null, error: null };
+  }
+
+  const start = Date.now();
+  try {
+    const res = await fetch(`${credentials.baseUrl}/api/`, {
+      headers: { Authorization: `Bearer ${credentials.token}` },
+      signal: AbortSignal.timeout(5000),
+      cache: "no-store",
+    });
+    const latencyMs = Date.now() - start;
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const sensorCount = countConfiguredSensors();
+    return {
+      name,
+      status: "ok",
+      latencyMs,
+      details: `${sensorCount} sensor${sensorCount === 1 ? "" : "s"} configured`,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      name,
+      status: "error",
+      latencyMs: Date.now() - start,
+      details: null,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
   }
 }
 
@@ -189,6 +234,11 @@ export async function GET(req: NextRequest) {
     { name: "BirdNET", configured: !!process.env.BIRDNET_ENDPOINT, envKey: "BIRDNET_ENDPOINT" },
     { name: "Steam", configured: !!(process.env.STEAM_API_KEY && process.env.STEAM_ID), envKey: "STEAM_API_KEY + STEAM_ID" },
     { name: "Uptime Kuma", configured: !!(process.env.UPTIME_KUMA_ENDPOINT && process.env.UPTIME_KUMA_SLUG), envKey: "UPTIME_KUMA_ENDPOINT + UPTIME_KUMA_SLUG" },
+    {
+      name: "Home Assistant",
+      configured: isHaConfigured(),
+      envKey: "HA_URL + HA_TOKEN + HA_SENSOR_GROUPS",
+    },
   ];
 
   let sectionUpdates: { section: string; updated_at: string | null }[] = [];
@@ -207,7 +257,7 @@ export async function GET(req: NextRequest) {
   let finalProbedAt: string | null = probedAt;
 
   if (url.searchParams.get("probe") === "true") {
-    const results = await Promise.allSettled([probeAdsb(), probeBirdnet(), probeSteam(), probeUptime()]);
+    const results = await Promise.allSettled([probeAdsb(), probeBirdnet(), probeSteam(), probeUptime(), probeHomeAssistant()]);
     probes = results.map((r) =>
       r.status === "fulfilled"
         ? r.value
