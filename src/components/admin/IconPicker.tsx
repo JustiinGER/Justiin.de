@@ -20,6 +20,7 @@ const curatedList = [
   "Speaker", "Mic", "Fan", "Droplets", "Activity", "Globe", "Cloud",
   "Star", "Heart", "Plane", "Bird", "Gamepad2", "Code", "Leaf", "Car", "Boxes", "Bug",
   "FaGithub", "FaDiscord", "FaTelegramPlane", "FaSteam", "FaTwitter", "FaLinkedin",
+  "SiFluxer",
   "SiAmd", "SiNvidia", "SiAsus", "FaWindows", "BsDeviceSsd", "FaMemory"
 ];
 
