@@ -1,12 +1,16 @@
 import Link from "next/link";
+import { getLastContentUpdatedAt } from "@/lib/content.server";
 
-export function Footer() {
+export async function Footer() {
   const currentYear = new Date().getFullYear();
-  const lastUpdated = new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date());
+  const contentUpdatedAt = await getLastContentUpdatedAt();
+  const lastUpdated = contentUpdatedAt
+    ? new Intl.DateTimeFormat("de-DE", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(contentUpdatedAt)
+    : null;
 
   return (
     <footer
@@ -23,8 +27,8 @@ export function Footer() {
             Built with Next.js and{" "}
             <span className="text-red-500" role="img" aria-label="heart">
               ❤️
-            </span>{" "}
-            | Last updated {lastUpdated}
+            </span>
+            {lastUpdated ? <> | Last updated {lastUpdated}</> : null}
           </p>
         </div>
         <nav aria-label="Footer" className="w-full md:w-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

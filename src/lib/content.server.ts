@@ -320,3 +320,22 @@ export async function getSectionUpdateTimes(): Promise<SectionUpdateTime[]> {
     updated_at: row.updated_at ? parseDateFromDb(row.updated_at) : null,
   }));
 }
+
+/** Latest time any site content section was saved via the admin (not code deploys / sensors). */
+export async function getLastContentUpdatedAt(): Promise<Date | null> {
+  if (!isDbConfigured()) {
+    return null;
+  }
+
+  try {
+    const db = getDb();
+    const rows = await db.query<{ updated_at: unknown }>(
+      "SELECT MAX(updated_at) AS updated_at FROM site_content"
+    );
+    const raw = rows[0]?.updated_at;
+    return raw ? parseDateFromDb(raw) : null;
+  } catch (err) {
+    console.warn("[content.server] Failed to read last content update:", err);
+    return null;
+  }
+}
