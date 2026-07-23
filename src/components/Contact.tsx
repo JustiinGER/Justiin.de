@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { contactData as defaultContactData } from "@/lib/data";
+import { resolveBrandColorClasses } from "@/lib/brand-colors";
 import { fadeUp } from "@/lib/motion";
 import { IconRenderer } from "./admin/IconPicker";
 
@@ -19,6 +20,10 @@ export function Contact({ data = defaultContactData }: { data?: typeof defaultCo
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
           {data.links.map((link) => {
+            const brand = resolveBrandColorClasses(
+              link.color || "text-brand-accent",
+              link.bgColor || "bg-brand-accent/10"
+            );
             return (
               <a
                 key={link.id}
@@ -27,9 +32,15 @@ export function Contact({ data = defaultContactData }: { data?: typeof defaultCo
                 rel="noopener noreferrer"
                 className="group relative flex flex-col items-center justify-center p-8 rounded-3xl bg-brand-card/50 border border-brand-border hover:border-brand-accent/50 transition-all duration-300 hover:shadow-[0_0_30px_-5px_rgba(var(--brand-accent-rgb),0.2)] overflow-hidden"
               >
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${link.bgColor || "bg-brand-accent/10"}`} />
+                <div
+                  className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${brand.style.backgroundColor ? "" : brand.className}`}
+                  style={brand.style.backgroundColor ? { backgroundColor: brand.style.backgroundColor } : undefined}
+                />
                 
-                <div className={`p-4 rounded-2xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1 ${link.bgColor || "bg-brand-accent/10"} ${link.color || "text-brand-accent"}`}>
+                <div
+                  className={`p-4 rounded-2xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-1 ${brand.className}`}
+                  style={brand.style}
+                >
                   <IconRenderer name={link.icon} className="w-10 h-10" />
                 </div>
                 
