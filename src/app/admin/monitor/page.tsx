@@ -8,7 +8,7 @@ import { HealthPanel } from "@/components/admin/HealthPanel";
 import { ContentHistory } from "@/components/admin/ContentHistory";
 import { ActivityLog } from "@/components/admin/ActivityLog";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
-import { getAdminToken } from "@/lib/admin-session.client";
+import { hasAdminSession } from "@/lib/admin-session.client";
 
 export default function AdminMonitorPage() {
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function AdminMonitorPage() {
   useEffect(() => {
     let cancelled = false;
 
-    getAdminToken().then((token) => {
+    hasAdminSession().then((authenticated) => {
       if (cancelled) return;
-      if (!token) {
+      if (!authenticated) {
         router.push("/admin");
         return;
       }

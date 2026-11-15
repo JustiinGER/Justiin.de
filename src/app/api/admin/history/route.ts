@@ -3,11 +3,12 @@ import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth.server";
 import { getContentHistory, rollbackContent, type ContentSection } from "@/lib/content.server";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { getClientIp } from "@/lib/client-ip.server";
 
 const allowedSections: ContentSection[] = ["aboutMe", "passions", "lab", "contactData", "gear"];
 
 export async function GET(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "History entry not found" }, { status: 404 });
     }
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    const ip = getClientIp(req);
     await logAdminAction(user.username, "rollback", result.section, ip, {
       historyId: result.archivedHistoryId ?? undefined,
       before: result.before ?? undefined,

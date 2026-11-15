@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { HardDrive, Cpu, Activity, Globe } from "lucide-react";
-import { lab as defaultLab } from "@/lib/data";
+import type { Lab as LabData } from "@/lib/data";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 import { GlassCard } from "./ui/GlassCard";
 import { SectionHeading } from "./ui/SectionHeading";
@@ -10,7 +10,7 @@ import { SpecBadge } from "./ui/SpecBadge";
 import { Tooltip } from "./ui/Tooltip";
 import { ServerStatus } from "./ui/ServerStatus";
 
-export function Lab({ data = defaultLab }: { data?: typeof defaultLab }) {
+export function Lab({ data }: { data: LabData }) {
   return (
     <section id="lab" className="py-24 px-6 lg:px-8 max-w-7xl mx-auto">
       <SectionHeading title={data.title} subtitle={data.subtitle} />

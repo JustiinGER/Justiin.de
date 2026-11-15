@@ -229,6 +229,10 @@ export interface LabServer {
   osBg: string;
   specs: ServerSpec[];
   services: (string | Tag)[];
+  /**
+   * Address probed by /api/ping. Server-side only: defaults live in
+   * lab-hosts.server.ts and the field is stripped before rendering.
+   */
   ip?: string;
 }
 
@@ -247,7 +251,6 @@ export const lab: Lab = {
       name: "Ugreen DXP6800 Pro",
       os: "Unraid OS",
       role: "Media & Storage Node",
-      ip: "192.168.2.166",
       osColor: "text-orange-400",
       osBg: "bg-orange-500/10",
       specs: [
@@ -269,7 +272,6 @@ export const lab: Lab = {
       name: "Minisforum UM790 Pro",
       os: "Proxmox VE",
       role: "Virtualization & Services",
-      ip: "192.168.2.146",
       osColor: "text-red-400",
       osBg: "bg-red-500/10",
       specs: [
@@ -290,7 +292,6 @@ export const lab: Lab = {
       name: "Dell Wyse 5070",
       os: "DietPi",
       role: "ADS-B & Audio Node",
-      ip: "192.168.2.153",
       osColor: "text-purple-400",
       osBg: "bg-purple-500/10",
       specs: [
@@ -307,7 +308,6 @@ export const lab: Lab = {
       name: "Raspberry Pi 5",
       os: "Raspberry Pi OS",
       role: "Droneaware Host",
-      ip: "192.168.2.115",
       osColor: "text-rose-400",
       osBg: "bg-rose-500/10",
       specs: [

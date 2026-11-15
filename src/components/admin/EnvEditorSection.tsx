@@ -22,7 +22,6 @@ import {
   Wand2,
   X,
 } from "lucide-react";
-import { getAdminToken } from "@/lib/admin-session.client";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { CRITICAL_ENV_KEYS, isCriticalEnvKey } from "@/lib/env-critical";
 import {
@@ -869,7 +868,13 @@ export function EnvEditorSection() {
   const [rawText, setRawText] = useState("");
   const [originalRaw, setOriginalRaw] = useState("");
   const [modeError, setModeError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [unlockPassword, setUnlockPassword] = useState("");
+  const [unlockError, setUnlockError] = useState("");
+  // Kept in memory only, so the file can be re-read after a save or retry
+  // without asking again. Gone as soon as the page is left.
+  const confirmedPassword = useRef("");
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [saveError, setSaveError] = useState("");
@@ -961,24 +966,39 @@ export function EnvEditorSection() {
     return getCriticalRemovals(original, effective);
   }, [pendingChanges, original, viewMode, lines, rawText]);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (password?: string) => {
+    const currentPassword = password ?? confirmedPassword.current;
+    if (!currentPassword) return;
+
     setIsLoading(true);
     setLoadError("");
     setModeError("");
+    setUnlockError("");
     try {
-      const token = await getAdminToken();
       const res = await fetch("/api/admin/env", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ currentPassword }),
       });
       if (!res.ok) {
-        if (res.status === 401) {
-          sessionStorage.removeItem("admin_token");
+        const json = await res.json().catch(() => ({}));
+        if (res.status === 401 && !json.error?.toLowerCase().includes("password")) {
           window.location.href = "/admin";
           return;
         }
-        throw new Error((await res.json()).error ?? "Failed to load");
+        if (res.status === 401 || res.status === 429) {
+          // Wrong password or too many attempts — back to the unlock prompt.
+          confirmedPassword.current = "";
+          setIsUnlocked(false);
+          setUnlockError(json.error ?? "Incorrect password");
+          return;
+        }
+        throw new Error(json.error ?? "Failed to load");
       }
+      confirmedPassword.current = currentPassword;
+      setIsUnlocked(true);
+      setUnlockPassword("");
       const data = (await res.json()) as {
         lines: EnvLine[];
         hints?: Record<string, string>;
@@ -1001,10 +1021,6 @@ export function EnvEditorSection() {
       setIsLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const applyLineUpdate = useCallback((id: string, field: "key" | "value", val: string) => {
     setLines((prev) =>
@@ -1078,12 +1094,10 @@ export function EnvEditorSection() {
     setIsResetting(true);
     setResetPasswordError("");
     try {
-      const token = await getAdminToken();
       const res = await fetch("/api/admin/env", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
         body: JSON.stringify({
@@ -1098,7 +1112,6 @@ export function EnvEditorSection() {
           if (json.error?.toLowerCase().includes("password")) {
             setResetPasswordError(json.error ?? "Incorrect password");
           } else {
-            sessionStorage.removeItem("admin_token");
             window.location.href = "/admin";
           }
           return;
@@ -1113,7 +1126,6 @@ export function EnvEditorSection() {
 
       const changes = computeChanges(original, effectiveLines);
       if (changes.some((c) => c.key === "JWT_SECRET")) {
-        sessionStorage.removeItem("admin_token");
         setOriginal(effectiveLines);
         setOriginalRaw(rawExample);
         setTimeout(() => {
@@ -1122,7 +1134,7 @@ export function EnvEditorSection() {
         return;
       }
 
-      await load();
+      await load(resetPassword);
     } catch {
       setResetPasswordError("Reset failed — please try again");
     } finally {
@@ -1269,7 +1281,6 @@ export function EnvEditorSection() {
     setIsSaving(true);
 
     try {
-      const token = await getAdminToken();
       const body =
         viewMode === "raw"
           ? {
@@ -1287,7 +1298,6 @@ export function EnvEditorSection() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         credentials: "include",
         body: JSON.stringify(body),
@@ -1299,7 +1309,6 @@ export function EnvEditorSection() {
           if (data.error?.toLowerCase().includes("password")) {
             setSavePasswordError(data.error);
           } else {
-            sessionStorage.removeItem("admin_token");
             window.location.href = "/admin";
           }
           return;
@@ -1308,7 +1317,6 @@ export function EnvEditorSection() {
       }
 
       if (pendingChanges?.some((c) => c.key === "JWT_SECRET")) {
-        sessionStorage.removeItem("admin_token");
         if (viewMode === "raw") {
           setOriginalRaw(rawText);
         } else {
@@ -1433,7 +1441,7 @@ export function EnvEditorSection() {
           </span>
         </div>
 
-        {!isLoading && !loadError && viewMode === "form" && activeMissingFromTemplate.length > 0 && (
+        {isUnlocked && !isLoading && !loadError && viewMode === "form" && activeMissingFromTemplate.length > 0 && (
           <div className="mb-4">
             <MissingFromTemplatePanel
               items={activeMissingFromTemplate}
@@ -1443,7 +1451,7 @@ export function EnvEditorSection() {
           </div>
         )}
 
-        {!isLoading && !loadError && (
+        {isUnlocked && !isLoading && !loadError && (
           <div
             className="mb-4 flex rounded-xl border border-brand-border p-1"
             role="tablist"
@@ -1490,6 +1498,52 @@ export function EnvEditorSection() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-brand-accent" />
           </div>
+        ) : !isUnlocked ? (
+          <form
+            className="space-y-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (unlockPassword) load(unlockPassword);
+            }}
+          >
+            <p className="flex items-start gap-2 text-sm text-brand-muted">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>Enter your password to view and edit the environment file.</span>
+            </p>
+            <div>
+              <label
+                htmlFor="env-unlock-password"
+                className="mb-1 block text-xs font-medium text-brand-muted"
+              >
+                Current password
+              </label>
+              <input
+                id="env-unlock-password"
+                type="password"
+                value={unlockPassword}
+                onChange={(e) => {
+                  setUnlockPassword(e.target.value);
+                  setUnlockError("");
+                }}
+                placeholder="Enter your password"
+                className={`${unlockError ? "border-red-500/40 focus:border-red-500/40 focus:ring-red-500/30" : "border-brand-border focus:border-brand-accent/50 focus:ring-brand-accent/50"} block w-full rounded-lg border bg-brand-bg px-3 py-2 text-sm text-brand-text placeholder-brand-muted transition-colors focus:outline-none focus:ring-2`}
+                autoComplete="current-password"
+              />
+              {unlockError && (
+                <p className="mt-1 text-xs text-red-400" role="alert">
+                  {unlockError}
+                </p>
+              )}
+            </div>
+            <button
+              type="submit"
+              disabled={!unlockPassword}
+              className="flex items-center justify-center gap-2 rounded-xl bg-brand-accent px-4 py-2.5 text-sm font-semibold text-brand-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Lock className="h-4 w-4" />
+              Unlock
+            </button>
+          </form>
         ) : loadError ? (
           <div className="space-y-3">
             <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -1497,7 +1551,7 @@ export function EnvEditorSection() {
             </p>
             <button
               type="button"
-              onClick={load}
+              onClick={() => load()}
               className="rounded-xl border border-brand-border px-4 py-2 text-sm text-brand-muted hover:text-brand-text transition-colors"
             >
               Retry

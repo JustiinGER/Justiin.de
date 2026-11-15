@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { Check, Loader2, Lock } from "lucide-react";
-import { getAdminToken } from "@/lib/admin-session.client";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -77,11 +76,6 @@ export function PasswordChangeSection() {
     }
     setFieldErrors({});
 
-    const token = await getAdminToken();
-    if (!token) {
-      setFormError("Session expired. Please sign in again.");
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -90,7 +84,6 @@ export function PasswordChangeSection() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify({ currentPassword, newPassword }),

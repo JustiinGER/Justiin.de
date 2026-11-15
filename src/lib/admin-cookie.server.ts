@@ -1,7 +1,7 @@
 type AdminSessionCookieOptions = {
   httpOnly: true;
   secure: boolean;
-  sameSite: "lax";
+  sameSite: "strict";
   path: "/";
   maxAge: number;
 };
@@ -23,7 +23,7 @@ export function adminSessionCookieOptions(
   return {
     httpOnly: true,
     secure,
-    sameSite: "lax",
+    sameSite: "strict",
     path: "/",
     maxAge,
   };

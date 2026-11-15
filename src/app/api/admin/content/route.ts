@@ -2,10 +2,41 @@ import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import { requireAuth } from "@/lib/auth.server";
 import { getAllContent, writeContent, type ContentSection } from "@/lib/content.server";
+import { isValidProbeHost } from "@/lib/probe-host";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { getClientIp } from "@/lib/client-ip.server";
+
+const MAX_CONTENT_BYTES = 256 * 1024;
+
+/** Returns a message when the submitted section must not be stored. */
+function findContentError(section: ContentSection, data: unknown): string | null {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return "Data must be an object";
+  }
+  if (Buffer.byteLength(JSON.stringify(data), "utf-8") > MAX_CONTENT_BYTES) {
+    return "Content is too large";
+  }
+
+  if (section === "lab") {
+    const servers = (data as { servers?: unknown }).servers;
+    if (servers !== undefined && !Array.isArray(servers)) {
+      return "lab.servers must be a list";
+    }
+    // /api/ping opens connections to these addresses, so only accept real hosts.
+    for (const server of (servers ?? []) as unknown[]) {
+      const ip = (server as { ip?: unknown } | null)?.ip;
+      if (ip === undefined || ip === null || ip === "") continue;
+      if (typeof ip !== "string" || !isValidProbeHost(ip)) {
+        return "Server IP must be a valid IP address or hostname";
+      }
+    }
+  }
+
+  return null;
+}
 
 export async function GET(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -20,7 +51,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -37,13 +68,18 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Invalid section" }, { status: 400 });
     }
 
+    const contentError = findContentError(section as ContentSection, data);
+    if (contentError) {
+      return NextResponse.json({ error: contentError }, { status: 400 });
+    }
+
     const { historyId } = await writeContent(
       section as ContentSection,
       data,
       user.username
     );
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    const ip = getClientIp(req);
     logAdminAction(user.username, "content_save", section, ip, {
       historyId: historyId ?? undefined,
       after: data,

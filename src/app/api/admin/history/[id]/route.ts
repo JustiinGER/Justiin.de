@@ -8,12 +8,13 @@ import {
   type ContentSection,
 } from "@/lib/content.server";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { getClientIp } from "@/lib/client-ip.server";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -53,7 +54,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -82,7 +83,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    const ip = getClientIp(req);
     logAdminAction(user.username, "history_delete", entry.section, ip, {
       historyId: entryId,
     }).catch((err) => {

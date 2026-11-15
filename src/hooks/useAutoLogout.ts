@@ -15,7 +15,6 @@ export function useAutoLogout() {
     } catch {
       // Ignore fetch errors
     }
-    sessionStorage.removeItem("admin_token");
     router.push("/admin");
   }, [router]);
 

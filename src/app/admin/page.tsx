@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { getAdminToken } from "@/lib/admin-session.client";
+import { hasAdminSession } from "@/lib/admin-session.client";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -18,9 +18,9 @@ export default function AdminLogin() {
   useEffect(() => {
     let cancelled = false;
 
-    getAdminToken().then((token) => {
+    hasAdminSession().then((authenticated) => {
       if (cancelled) return;
-      if (token) {
+      if (authenticated) {
         router.push("/admin/dashboard");
       } else {
         setIsCheckingSession(false);
@@ -47,13 +47,8 @@ export default function AdminLogin() {
 
       const data = await res.json();
 
-      if (res.ok && data.token) {
-        sessionStorage.setItem("admin_token", data.token);
-
-        const sessionRes = await fetch("/api/admin/session", { credentials: "include" });
-        const sessionData = sessionRes.ok ? await sessionRes.json() : null;
-        if (typeof sessionData?.token !== "string") {
-          sessionStorage.removeItem("admin_token");
+      if (res.ok && data.success) {
+        if (!(await hasAdminSession())) {
           setError(
             "Login succeeded but your browser did not save the session cookie. Check cookie settings or use HTTPS."
           );

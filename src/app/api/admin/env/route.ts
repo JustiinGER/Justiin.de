@@ -3,7 +3,9 @@ import type { NextRequest } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { requireAuth, verifyAdminPassword } from "@/lib/auth.server";
+import { passwordConfirmLimiter } from "@/lib/rate-limit.server";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { getClientIp } from "@/lib/client-ip.server";
 import { CRITICAL_ENV_KEYS } from "@/lib/env-critical";
 import {
   type EnvLine,
@@ -96,13 +98,55 @@ async function loadExampleMetadata(localLines: EnvLine[]) {
   }
 }
 
+/**
+ * Checks the re-entered account password. Returns an error response when it is
+ * wrong or when too many wrong attempts were made, otherwise null.
+ */
+async function rejectUnlessPasswordConfirmed(
+  username: string,
+  currentPassword: unknown,
+  missingMessage: string
+): Promise<NextResponse | null> {
+  if (typeof currentPassword !== "string" || !currentPassword) {
+    return NextResponse.json({ error: missingMessage }, { status: 400 });
+  }
+
+  const limit = passwordConfirmLimiter.check(username);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many incorrect password attempts. Please try again later." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds ?? 60) } }
+    );
+  }
+
+  if (!(await verifyAdminPassword(username, currentPassword))) {
+    passwordConfirmLimiter.recordFailure(username);
+    return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
+  }
+
+  passwordConfirmLimiter.reset(username);
+  return null;
+}
+
 // ---- Routes ----
 
-export async function GET(req: NextRequest) {
-  const user = requireAuth(req);
+/**
+ * Reads .env.local. The file holds every secret of the app, so a valid session
+ * alone is not enough — the account password has to be confirmed as well.
+ */
+export async function POST(req: NextRequest) {
+  const user = await requireAuth(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    const body = (await req.json().catch(() => null)) as { currentPassword?: unknown } | null;
+    const rejection = await rejectUnlessPasswordConfirmed(
+      user.username,
+      body?.currentPassword,
+      "Current password is required to view environment variables"
+    );
+    if (rejection) return rejection;
+
     let content = "";
     try {
       content = await fs.readFile(ENV_FILE, "utf-8");
@@ -117,15 +161,18 @@ export async function GET(req: NextRequest) {
     } catch {
       // example file may not exist
     }
-    return NextResponse.json({ lines, hints, raw: content, missingFromTemplate, rawExample });
+    return NextResponse.json(
+      { lines, hints, raw: content, missingFromTemplate, rawExample },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (err) {
-    console.error("[Env API] GET error:", err);
+    console.error("[Env API] POST error:", err);
     return NextResponse.json({ error: "Failed to read .env.local" }, { status: 500 });
   }
 }
 
 export async function PUT(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -137,17 +184,12 @@ export async function PUT(req: NextRequest) {
       confirmCriticalRemoval?: unknown;
     };
 
-    if (typeof currentPassword !== "string" || !currentPassword) {
-      return NextResponse.json(
-        { error: "Current password is required to save environment variables" },
-        { status: 400 }
-      );
-    }
-
-    const passwordOk = await verifyAdminPassword(user.username, currentPassword);
-    if (!passwordOk) {
-      return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
-    }
+    const rejection = await rejectUnlessPasswordConfirmed(
+      user.username,
+      currentPassword,
+      "Current password is required to save environment variables"
+    );
+    if (rejection) return rejection;
 
     let validLines: EnvLine[];
     let fileContent: string;
@@ -207,7 +249,7 @@ export async function PUT(req: NextRequest) {
     await fs.writeFile(tmpFile, fileContent, "utf-8");
     await fs.rename(tmpFile, ENV_FILE);
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+    const ip = getClientIp(req);
 
     logAdminAction(user.username, "env_save", null, ip, {
       before: buildRedactedMap(beforeLines),

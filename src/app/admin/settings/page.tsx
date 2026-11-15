@@ -8,7 +8,7 @@ import { EnvEditorSection } from "@/components/admin/EnvEditorSection";
 import { PasswordChangeSection } from "@/components/admin/PasswordChangeSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
-import { getAdminToken } from "@/lib/admin-session.client";
+import { hasAdminSession } from "@/lib/admin-session.client";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -18,9 +18,9 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     let cancelled = false;
 
-    getAdminToken().then((token) => {
+    hasAdminSession().then((authenticated) => {
       if (cancelled) return;
-      if (!token) {
+      if (!authenticated) {
         router.push("/admin");
         return;
       }

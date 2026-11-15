@@ -62,6 +62,7 @@ cp .env.local.example .env.local
 | --- | --- |
 | `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | MariaDB connection for admin auth and site content |
 | `JWT_SECRET` | Signing secret for admin sessions (generate with `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`) |
+| `TRUSTED_PROXY_HOPS` | Number of reverse proxies in front of the app (default `1`); decides which `X-Forwarded-For` entry is trusted as the client IP for login rate limiting and the audit log |
 | `ADSB_ENDPOINT`, `RECEIVER_LAT`, `RECEIVER_LON` | ADS-B aircraft data |
 | `BIRDNET_ENDPOINT` | BirdNET-Go species analytics |
 | `STEAM_API_KEY`, `STEAM_ID` | Recently played Steam games |

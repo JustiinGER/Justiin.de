@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Database, Radio, Bird, Gamepad2, Activity, Loader2, RefreshCw, Thermometer } from "lucide-react";
-import { getAdminToken } from "@/lib/admin-session.client";
 
 const PROBE_INTERVAL_MS = 30 * 60 * 1000;
 
@@ -66,12 +65,9 @@ export function HealthPanel() {
   const fetchHealth = async () => {
     setIsLoading(true);
     setError(null);
-    const token = await getAdminToken();
-    if (!token) { setIsLoading(false); return; }
 
     try {
       const res = await fetch("/api/admin/health", {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch health data");
@@ -87,12 +83,9 @@ export function HealthPanel() {
 
   const runProbes = async () => {
     setIsProbing(true);
-    const token = await getAdminToken();
-    if (!token) { setIsProbing(false); return; }
 
     try {
       const res = await fetch("/api/admin/health?probe=true", {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch health data");

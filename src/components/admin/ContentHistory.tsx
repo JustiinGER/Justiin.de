@@ -14,7 +14,6 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { getAdminToken } from "@/lib/admin-session.client";
 import { DiffView, computeJsonDiff } from "@/components/admin/DiffView";
 import type { DiffLine } from "@/lib/json-diff";
 
@@ -162,12 +161,9 @@ export function ContentHistory() {
   const fetchHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/history?section=${selectedSection}`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch history");
@@ -196,12 +192,9 @@ export function ContentHistory() {
     setPreviewLines([]);
     setPreviewLoading(true);
 
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/history/${entry.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to load preview");
@@ -218,15 +211,12 @@ export function ContentHistory() {
   const handleRollback = async () => {
     if (!previewEntry) return;
     setIsRollingBack(true);
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch("/api/admin/history", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify({ historyId: previewEntry.id }),
@@ -250,15 +240,12 @@ export function ContentHistory() {
 
   const togglePin = async (entry: HistoryEntry) => {
     setTogglingPin(entry.id);
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/history/${entry.id}/pin`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify({ pinned: !entry.pinned }),
@@ -278,12 +265,9 @@ export function ContentHistory() {
 
   const downloadEntry = async (entry: HistoryEntry) => {
     setDownloading(entry.id);
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/history/${entry.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch entry");
@@ -309,16 +293,10 @@ export function ContentHistory() {
   const deleteEntry = async (id: number) => {
     setDeleting(id);
     setDeleteError(null);
-    const token = await getAdminToken();
-    if (!token) {
-      setDeleting(null);
-      return;
-    }
 
     try {
       const res = await fetch(`/api/admin/history/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
 

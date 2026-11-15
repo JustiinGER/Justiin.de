@@ -1,118 +1,87 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { getDb } from "@/lib/db.server";
-import { createToken } from "@/lib/jwt.server";
+import { createSessionToken, verifyAdminPassword, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/auth.server";
 import { logAdminAction } from "@/lib/admin-log.server";
 import { adminSessionCookieOptions } from "@/lib/admin-cookie.server";
+import { getClientIp } from "@/lib/client-ip.server";
+import { createRateLimiter } from "@/lib/rate-limit.server";
 
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_ATTEMPTS = 5;
 
-interface RateLimitEntry {
-  attempts: number;
-  firstAttempt: number;
-}
+// Per client address: stops a single source from guessing.
+const ipLimiter = createRateLimiter({ windowMs: RATE_LIMIT_WINDOW_MS, maxAttempts: 5 });
+// Per account: caps guessing spread over many addresses, and is the only limit
+// when no trustworthy client address is available. Kept loose so that a few
+// stray attempts by someone else do not lock the real admin out.
+const usernameLimiter = createRateLimiter({ windowMs: RATE_LIMIT_WINDOW_MS, maxAttempts: 30 });
 
-const rateLimitMap = new Map<string, RateLimitEntry>();
+const MAX_USERNAME_LENGTH = 64;
+const MAX_PASSWORD_LENGTH = 1024;
 
-function getClientIp(req: Request): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  return "unknown";
-}
-
-function checkRateLimit(ip: string): { allowed: boolean; retryAfterSeconds?: number } {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry) {
-    return { allowed: true };
-  }
-
-  if (now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.delete(ip);
-    return { allowed: true };
-  }
-
-  if (entry.attempts >= MAX_ATTEMPTS) {
-    const retryAfterSeconds = Math.ceil((entry.firstAttempt + RATE_LIMIT_WINDOW_MS - now) / 1000);
-    return { allowed: false, retryAfterSeconds };
-  }
-
-  return { allowed: true };
-}
-
-function recordFailedAttempt(ip: string): void {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  if (!entry || now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(ip, { attempts: 1, firstAttempt: now });
-  } else {
-    entry.attempts++;
-  }
-}
-
-function clearFailedAttempts(ip: string): void {
-  rateLimitMap.delete(ip);
+function tooManyAttempts(retryAfterSeconds: number | undefined) {
+  return NextResponse.json(
+    { error: "Too many login attempts. Please try again later.", retryAfter: retryAfterSeconds },
+    {
+      status: 429,
+      headers: { "Retry-After": String(retryAfterSeconds ?? 60) },
+    }
+  );
 }
 
 export async function POST(req: Request) {
   const ip = getClientIp(req);
+  const ipKey = ip ? `ip:${ip}` : null;
 
-  const rateCheck = checkRateLimit(ip);
-  if (!rateCheck.allowed) {
-    return NextResponse.json(
-      { error: "Too many login attempts. Please try again later.", retryAfter: rateCheck.retryAfterSeconds },
-      {
-        status: 429,
-        headers: { "Retry-After": String(rateCheck.retryAfterSeconds) },
-      }
-    );
+  if (ipKey) {
+    const ipCheck = ipLimiter.check(ipKey);
+    if (!ipCheck.allowed) return tooManyAttempts(ipCheck.retryAfterSeconds);
   }
 
   try {
-    const { username, password } = await req.json();
+    const body = (await req.json().catch(() => null)) as {
+      username?: unknown;
+      password?: unknown;
+    } | null;
+    const username = body?.username;
+    const password = body?.password;
 
-    if (!username || !password) {
+    if (
+      typeof username !== "string" ||
+      typeof password !== "string" ||
+      !username ||
+      !password ||
+      username.length > MAX_USERNAME_LENGTH ||
+      password.length > MAX_PASSWORD_LENGTH
+    ) {
       return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
     }
 
-    const db = getDb();
-    const rows = await db.query<{ id: number; password: string }>(
-      "SELECT id, password FROM admin_users WHERE username = ?",
-      [username]
-    );
+    const userKey = `user:${username.toLowerCase()}`;
+    const userCheck = usernameLimiter.check(userKey);
+    if (!userCheck.allowed) return tooManyAttempts(userCheck.retryAfterSeconds);
 
-    if (rows.length === 0) {
-      recordFailedAttempt(ip);
+    const isValid = await verifyAdminPassword(username, password);
+    const token = isValid ? await createSessionToken(username) : null;
+
+    if (!token) {
+      if (ipKey) ipLimiter.recordFailure(ipKey);
+      usernameLimiter.recordFailure(userKey);
       return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
     }
 
-    const user = rows[0];
-    const isValid = await bcrypt.compare(password, user.password);
-
-    if (!isValid) {
-      recordFailedAttempt(ip);
-      return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
-    }
-
-    clearFailedAttempts(ip);
-
-    const token = createToken({ username });
+    if (ipKey) ipLimiter.reset(ipKey);
+    usernameLimiter.reset(userKey);
 
     logAdminAction(username, "login", null, ip).catch((err) => {
       console.error("[Auth API] Failed to log login:", err);
     });
 
-    const response = NextResponse.json({ token });
+    // The token is only ever delivered as an httpOnly cookie.
+    const response = NextResponse.json({ success: true });
 
     response.cookies.set(
-      "admin_session",
+      SESSION_COOKIE,
       token,
-      adminSessionCookieOptions(req.url, 24 * 60 * 60)
+      adminSessionCookieOptions(req.url, SESSION_MAX_AGE_SECONDS)
     );
 
     return response;
