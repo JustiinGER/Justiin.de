@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useState, useCallback } from "react";
 import { ScrollText, Loader2, ChevronDown, ChevronRight } from "lucide-react";
-import { getAdminToken } from "@/lib/admin-session.client";
 import { DiffView } from "@/components/admin/DiffView";
 import type { DiffLine } from "@/lib/json-diff";
 
@@ -65,12 +64,9 @@ export function ActivityLog() {
     }
     setError(null);
 
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/logs?limit=50&offset=${offset}`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch logs");
@@ -101,12 +97,9 @@ export function ActivityLog() {
     }
 
     setDiffCache((prev) => ({ ...prev, [logId]: { status: "loading" } }));
-    const token = await getAdminToken();
-    if (!token) return;
 
     try {
       const res = await fetch(`/api/admin/logs/${logId}/diff`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to load diff");

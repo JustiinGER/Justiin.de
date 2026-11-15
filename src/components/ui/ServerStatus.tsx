@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 interface ServerStatusProps {
   /**
-   * Public server identifier. Must match an entry on the server-side
-   * allowlist in `src/lib/servers.server.ts`. Internal IPs never leave
-   * the server, so the client only deals with opaque ids.
+   * Public server identifier. `/api/ping` resolves it against the lab content
+   * on the server; the page strips the `ip` field before rendering, so the
+   * client only deals with opaque ids.
    */
   id?: string;
 }

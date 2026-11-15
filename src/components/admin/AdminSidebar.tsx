@@ -49,7 +49,6 @@ export function AdminSidebar({ activeNav, children }: AdminSidebarProps) {
     } catch {
       // Ignore fetch errors, proceed with logout anyway
     }
-    sessionStorage.removeItem("admin_token");
     router.push("/admin");
   };
 

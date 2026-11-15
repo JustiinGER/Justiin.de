@@ -1,23 +1,19 @@
 /**
- * Restores admin_token in sessionStorage from the httpOnly admin_session cookie
- * when the tab was closed but the cookie is still valid.
+ * Asks the server whether the httpOnly admin_session cookie is still valid.
+ * The session token itself is never exposed to JavaScript.
  */
-export async function getAdminToken(): Promise<string | null> {
-  const cached = sessionStorage.getItem("admin_token");
-  if (cached) return cached;
-
+export async function hasAdminSession(): Promise<boolean> {
   try {
-    const res = await fetch("/api/admin/session", { credentials: "include" });
-    if (!res.ok) return null;
+    const res = await fetch("/api/admin/session", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!res.ok) return false;
 
     const data = await res.json();
-    if (typeof data.token === "string") {
-      sessionStorage.setItem("admin_token", data.token);
-      return data.token;
-    }
+    return data.authenticated === true;
   } catch {
     // Network error — treat as unauthenticated
+    return false;
   }
-
-  return null;
 }

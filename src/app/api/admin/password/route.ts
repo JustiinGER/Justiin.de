@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server";
 import { type NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
-import { requireAuth, verifyAdminPassword } from "@/lib/auth.server";
+import {
+  createSessionToken,
+  requireAuth,
+  revokeSessions,
+  verifyAdminPassword,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SECONDS,
+} from "@/lib/auth.server";
+import { adminSessionCookieOptions } from "@/lib/admin-cookie.server";
+import { passwordConfirmLimiter } from "@/lib/rate-limit.server";
 import { getDb } from "@/lib/db.server";
 import { logAdminAction } from "@/lib/admin-log.server";
+import { getClientIp } from "@/lib/client-ip.server";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 export async function PATCH(req: NextRequest) {
-  const user = requireAuth(req);
+  const user = await requireAuth(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -16,7 +26,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const { currentPassword, newPassword } = await req.json();
 
-    if (!currentPassword || !newPassword) {
+    if (typeof currentPassword !== "string" || !currentPassword || !newPassword) {
       return NextResponse.json(
         { error: "Current password and new password are required" },
         { status: 400 }
@@ -41,11 +51,22 @@ export async function PATCH(req: NextRequest) {
     }
 
     const dbUser = rows[0];
+    const limit = passwordConfirmLimiter.check(user.username);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: "Too many incorrect password attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds ?? 60) } }
+      );
+    }
+
     const isValid = await verifyAdminPassword(user.username, currentPassword);
 
     if (!isValid) {
+      passwordConfirmLimiter.recordFailure(user.username);
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
     }
+
+    passwordConfirmLimiter.reset(user.username);
 
     const hash = await bcrypt.hash(newPassword, 10);
     await db.execute("UPDATE admin_users SET password = ? WHERE id = ?", [
@@ -53,12 +74,24 @@ export async function PATCH(req: NextRequest) {
       dbUser.id,
     ]);
 
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+    const ip = getClientIp(req);
     logAdminAction(user.username, "password_change", null, ip).catch((err) => {
       console.error("[Password API] Failed to log password change:", err);
     });
 
-    return NextResponse.json({ success: true });
+    // Sign out every existing session, then keep this browser signed in.
+    await revokeSessions(user.username);
+    const token = await createSessionToken(user.username);
+
+    const response = NextResponse.json({ success: true });
+    if (token) {
+      response.cookies.set(
+        SESSION_COOKIE,
+        token,
+        adminSessionCookieOptions(req.url, SESSION_MAX_AGE_SECONDS)
+      );
+    }
+    return response;
   } catch (err) {
     console.error("[Password API] Error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

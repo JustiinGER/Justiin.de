@@ -23,7 +23,6 @@ import { ContactForm } from "@/components/admin/ContactForm";
 import { JsonEditor } from "@/components/admin/JsonEditor";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
-import { getAdminToken } from "@/lib/admin-session.client";
 
 type Tab = "aboutMe" | "lab" | "passions" | "gear" | "contactData";
 
@@ -49,28 +48,18 @@ export default function AdminDashboard() {
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
-      const token = await getAdminToken();
-      if (cancelled) return;
-
-      if (!token) {
-        router.push("/admin");
-        return;
-      }
-
-      fetch("/api/admin/content", {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      })
+    fetch("/api/admin/content", {
+      credentials: "include",
+    })
       .then(res => {
         if (res.status === 401) {
-          sessionStorage.removeItem("admin_token");
           router.push("/admin");
           throw new Error("Unauthorized");
         }
         return res.json();
       })
       .then(data => {
+        if (cancelled) return;
         if (data.content) {
           setContent(data.content);
           setSavedContentStrings(
@@ -83,9 +72,8 @@ export default function AdminDashboard() {
       })
       .catch(err => {
         console.error(err);
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       });
-    })();
 
     return () => {
       cancelled = true;
@@ -97,18 +85,12 @@ export default function AdminDashboard() {
     
     setIsSaving(true);
     setSaveStatus("idle");
-    const token = await getAdminToken();
-    if (!token) {
-      router.push("/admin");
-      return;
-    }
 
     try {
       const res = await fetch("/api/admin/content", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
         body: JSON.stringify({
@@ -121,6 +103,8 @@ export default function AdminDashboard() {
         setSaveStatus("success");
         setSavedContentStrings(prev => ({ ...prev, [activeTab]: JSON.stringify(content[activeTab]) }));
         setTimeout(() => setSaveStatus("idle"), 3000);
+      } else if (res.status === 401) {
+        router.push("/admin");
       } else {
         setSaveStatus("error");
       }
@@ -177,7 +161,6 @@ export default function AdminDashboard() {
         <h2 className="text-xl font-semibold text-brand-text">Failed to load content</h2>
         <button
           onClick={() => {
-            sessionStorage.removeItem("admin_token");
             router.push("/admin");
           }}
           className="mt-4 text-brand-accent hover:underline"

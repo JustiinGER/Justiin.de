@@ -18,7 +18,7 @@ function base64url(input: Buffer | string): string {
   return buf.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-export function createToken(payload: Record<string, unknown>, expiresInHours = 24): string {
+export function createToken(payload: Record<string, unknown>, expiresInHours = 8): string {
   const secret = getSecret();
   const header = base64url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
   const exp = Math.floor(Date.now() / 1000) + expiresInHours * 3600;

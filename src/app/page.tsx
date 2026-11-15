@@ -23,10 +23,21 @@ export const revalidate = 60; // Revalidate the page every 60 seconds
 export default async function Home() {
   const content = await getAllContent();
 
+  // Lab is a Client Component, so its props end up in the HTML. Internal
+  // addresses are only needed server-side by /api/ping and must not ship.
+  const publicLab = {
+    ...content.lab,
+    servers: content.lab.servers.map((server) => {
+      const { ip, ...publicServer } = server;
+      void ip;
+      return publicServer;
+    }),
+  };
+
   return (
     <main id="main" className="flex flex-col">
       <Hero data={content.aboutMe} />
-      <Lab data={content.lab} />
+      <Lab data={publicLab} />
       <Passions data={content.passions} />
       <Gear data={content.gear} />
       <Contact data={content.contactData} />

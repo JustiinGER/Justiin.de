@@ -6,6 +6,7 @@
 
 import { aboutMe, passions, lab, contactData } from "./data";
 import { gearData } from "./data";
+import { defaultLabHosts } from "./lab-hosts.server";
 import { getDb, isDbConfigured, parseDateFromDb } from "./db.server";
 
 export type ContentSection = "aboutMe" | "passions" | "lab" | "contactData" | "gear";
@@ -13,7 +14,10 @@ export type ContentSection = "aboutMe" | "passions" | "lab" | "contactData" | "g
 const defaults = {
   aboutMe,
   passions,
-  lab,
+  lab: {
+    ...lab,
+    servers: lab.servers.map((server) => ({ ...server, ip: defaultLabHosts[server.id] })),
+  },
   contactData,
   gear: gearData,
 };
