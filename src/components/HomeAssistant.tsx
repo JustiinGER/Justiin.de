@@ -52,8 +52,9 @@ export function HomeAssistant() {
 
   if (!data || !data.configured || data.groups.length === 0) return null;
 
-  const allEmpty = data.groups.every((g) => g.sensors.length === 0);
-  if (allEmpty) return null;
+  // Groups without any available sensor (e.g. dead battery) are hidden entirely
+  const visibleGroups = data.groups.filter((g) => g.sensors.length > 0);
+  if (visibleGroups.length === 0) return null;
 
   const getIcon = (deviceClass: string) => {
     switch (deviceClass) {
@@ -66,7 +67,7 @@ export function HomeAssistant() {
     }
   };
 
-  const hasLabels = data.groups.some((g) => g.label);
+  const hasLabels = visibleGroups.some((g) => g.label);
 
   const selectedLive = selectedSensor
     ? (() => {
@@ -80,7 +81,7 @@ export function HomeAssistant() {
   return (
     <>
       <div className="flex items-center justify-center gap-4 flex-wrap">
-        {data.groups.map((group, groupIdx) => (
+        {visibleGroups.map((group, groupIdx) => (
           <div
             key={groupIdx}
             className="flex items-stretch rounded-full border border-brand-border bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shadow-sm overflow-hidden"
